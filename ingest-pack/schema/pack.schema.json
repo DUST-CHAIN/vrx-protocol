@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vettedrealty/ingest-pack/pack.schema.json",
+  "title": "VRX Ingest Pack manifest",
+  "description": "The top-level pack.json: who the pack is from, the entity tree it declares, and integrity checksums. One pack = one developer's proposed inventory, assembled offline and imported+vetted+activated by VRX root. Grounded in portal/lib/catalog.ts.",
+  "type": "object",
+  "required": ["schemaVersion", "developer", "tree"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "generatedBy": { "type": "string", "description": "App + version that produced the pack (e.g. 'vrx-materials 0.1.0')." },
+
+    "developer": {
+      "type": "object",
+      "description": "The developer (person or holding company) the pack belongs to. Trust/brand flows DOWN the tree from here (the inheritance model).",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "URL-safe stable id." },
+        "name": { "type": "string" },
+        "holdingCompany": { "type": "string", "description": "Parent/holding company name, if any." },
+        "contact": { "type": "object", "description": "Primary contact. PII — stays off-chain." },
+        "nearAccount": { "type": "string", "description": "Proposed on-chain account for this developer's Node. Owner-gated activation." },
+        "logo": { "type": "string", "description": "Relative path to the developer/brand logo inside the pack." }
+      }
+    },
+
+    "companies": {
+      "type": "array",
+      "description": "Legal entities a project may be registered under (a developer can have several). Buildings reference a companyId.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "name": { "type": "string" },
+          "registration": { "type": "string", "description": "Company registration number / jurisdiction." }
+        }
+      }
+    },
+
+    "tree": {
+      "type": "object",
+      "description": "The declared inheritance tree: developer -> companies -> complexes -> buildings. Children inherit shared facts (media, facilities) from parents; the import resolves inheritance.",
+      "required": ["complexes"],
+      "additionalProperties": false,
+      "properties": {
+        "complexes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "buildings"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Also the shared-media folder key (buildings inherit complexes/<id>/media)." },
+              "name": { "type": "string" },
+              "companyId": { "type": "string", "description": "Which company this complex is registered under." },
+              "area": { "type": "string" },
+              "amenities": { "type": "array", "items": { "type": "string" }, "description": "Complex-shared facilities (inherited by all buildings)." },
+              "buildings": {
+                "type": "array",
+                "description": "Building ids whose building.json lives under buildings/<id>/. The building inherits this complex.",
+                "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "checksums": {
+      "type": "object",
+      "description": "sha256 of each referenced file (relative path -> hex). Lets root verify the pack is intact + unchanged before activating; the root checksum can be anchored on-chain as an opaque provenance id.",
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    }
+  }
+}

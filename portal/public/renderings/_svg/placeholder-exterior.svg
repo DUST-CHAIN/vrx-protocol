@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="#fcfdfe"/>
+
+  <!-- horizon line -->
+  <line x1="120" y1="470" x2="680" y2="470" stroke="#9fb0bf" stroke-width="1.5"/>
+
+  <!-- tower body -->
+  <rect x="320" y="160" width="160" height="310" fill="#f6f8fa" stroke="#334455" stroke-width="2"/>
+
+  <!-- roof cap / slight setback -->
+  <rect x="345" y="130" width="110" height="30" fill="#eef2f6" stroke="#334455" stroke-width="2"/>
+
+  <!-- window / balcony grid -->
+  <g stroke="#9fb0bf" stroke-width="1.5">
+    <!-- vertical mullions -->
+    <line x1="360" y1="175" x2="360" y2="455"/>
+    <line x1="400" y1="175" x2="400" y2="455"/>
+    <line x1="440" y1="175" x2="440" y2="455"/>
+    <!-- horizontal floor / balcony lines -->
+    <line x1="332" y1="200" x2="468" y2="200"/>
+    <line x1="332" y1="235" x2="468" y2="235"/>
+    <line x1="332" y1="270" x2="468" y2="270"/>
+    <line x1="332" y1="305" x2="468" y2="305"/>
+    <line x1="332" y1="340" x2="468" y2="340"/>
+    <line x1="332" y1="375" x2="468" y2="375"/>
+    <line x1="332" y1="410" x2="468" y2="410"/>
+  </g>
+
+  <!-- entrance -->
+  <rect x="378" y="430" width="44" height="40" fill="#eef2f6" stroke="#334455" stroke-width="2"/>
+
+  <!-- small tree, left -->
+  <g stroke="#334455" stroke-width="2" fill="#eef2f6">
+    <circle cx="265" cy="430" r="26"/>
+  </g>
+  <line x1="265" y1="456" x2="265" y2="470" stroke="#334455" stroke-width="2"/>
+
+  <!-- small tree, right -->
+  <g stroke="#334455" stroke-width="2" fill="#eef2f6">
+    <circle cx="535" cy="435" r="22"/>
+  </g>
+  <line x1="535" y1="457" x2="535" y2="470" stroke="#334455" stroke-width="2"/>
+
+  <!-- caption -->
+  <text x="400" y="535" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="18" letter-spacing="3" fill="#5a6b7a">EXTERIOR</text>
+</svg>

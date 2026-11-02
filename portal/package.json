@@ -1,0 +1,37 @@
+{
+  "name": "vrx-portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VRX operator/agency portal — Next.js + near-api-js against the live VRX reservation contract.",
+  "scripts": {
+    "dev": "next dev -p 3011",
+    "demo": "npx -y tsx lib/demo.run.ts",
+    "build": "next build",
+    "start": "next start -p 3011",
+    "lint": "next lint",
+    "test": "npx -y tsx lib/vrx.exclusive.test.ts && npx -y tsx lib/participant.test.ts && npx -y tsx lib/seal.test.ts && npx -y tsx lib/sale-contract.concessions.test.ts && npx -y tsx lib/sale-contract.buildstate.test.ts && npx -y tsx lib/sale-contract.review.test.ts && npx -y tsx lib/sale-contract.dates.test.ts && npx -y tsx lib/sale-contract.changeclause.test.ts && npx -y tsx lib/catalog-geo.test.ts && npx -y tsx lib/catalog-terms.test.ts && npx -y tsx lib/status-ledger.test.ts && npx -y tsx lib/building-setup.test.ts && npx -y tsx lib/buyers-direct.test.ts && npx -y tsx lib/buyer-catalog.test.ts && npx -y tsx lib/channels.test.ts && npx -y tsx lib/conversations-direct.test.ts && npx -y tsx lib/relationship-channel.test.ts && npx -y tsx lib/unit-grants.test.ts && npx -y tsx lib/offer-eligibility.test.ts && npx -y tsx lib/direct-deposits.test.ts && npx -y tsx lib/sale-baseline.test.ts && npx -y tsx lib/bookable.test.ts && npx -y tsx lib/release-readiness.test.ts && npx -y tsx lib/commission.test.ts && npx -y tsx lib/earmark.test.ts && npx -y tsx lib/settlement-projection.test.ts && npx -y tsx lib/gate-agreement-check.test.ts && npx -y tsx lib/stamp-jobs.test.ts && npx -y tsx lib/profile-requirements.test.ts && npx -y tsx lib/payment-ledger.test.ts && npx -y tsx lib/dev-standing.test.ts && npx -y tsx lib/payment-vault.test.ts && npx -y tsx lib/payment-sent.test.ts && npx -y tsx lib/payment-reconcile.test.ts && npx -y tsx lib/payment-reconcile-wiring.test.ts && npx -y tsx lib/vrx-receipts.test.ts && npx -y tsx lib/listing-gate.test.ts && npx -y tsx lib/standing-scheduler.test.ts && npx -y tsx lib/misrepresentation-store.test.ts && npx -y tsx lib/misrepresentation-wiring.test.ts && npx -y tsx lib/building-halt.test.ts && npx -y tsx lib/halt-affected.test.ts && npx -y tsx lib/halt-notices.test.ts && npx -y tsx lib/activity-feed.test.ts && npx -y tsx lib/vrx-developer-agreement.test.ts && npx -y tsx lib/conversations-unread.test.ts && npx -y tsx lib/termination.test.ts && npx -y tsx lib/termination-store.test.ts && npx -y tsx lib/termination-terms.test.ts && npx -y tsx lib/termination-settlement.test.ts && npx -y tsx lib/income-projection.test.ts && npx -y tsx lib/smoke-fixtures.test.ts && npx -y tsx lib/backfill-dates.test.ts && npx -y tsx lib/catalog-texture.test.ts && npx -y tsx lib/dev-edit-policy.test.ts && npx -y tsx lib/inventory-version.test.ts && npx -y tsx lib/catalog-edit-gate.test.ts && npx -y tsx lib/price-rounding.test.ts && npx -y tsx lib/apply-version.test.ts && npx -y tsx lib/dev-signer.test.ts && npx -y tsx lib/session.test.ts && npx -y tsx lib/caller.test.ts && npx -y tsx lib/nep413.test.ts && npx -y tsx lib/buyer-mask.test.ts && npx -y tsx lib/direct-offer.test.ts && npx -y tsx lib/direct-offer-lifecycle.test.ts && npx -y tsx lib/direct-offer-sp.test.ts && npx -y tsx lib/property.test.ts && npx -y tsx lib/payment-methods.test.ts && npx -y tsx lib/booking-tokens.test.ts && npx -y tsx lib/vrx-demo-currency.test.ts && npx -y tsx lib/token-evidence.test.ts && npx -y tsx lib/buyer-policy.test.ts && npx -y tsx lib/tier0-land.test.ts && npx -y tsx lib/change-evidence.test.ts && npx -y tsx lib/affected-parties.test.ts && npx -y tsx lib/contract-amendment.test.ts && npx -y tsx lib/seller-entity-governance.test.ts && npx -y tsx lib/tier0-correction.test.ts && npx -y tsx lib/tier0-correction-apply.test.ts && npx -y tsx lib/amendment-party-view.test.ts && npx -y tsx lib/field-plausibility.test.ts && npx -y tsx lib/effective-status.test.ts && npx -y tsx lib/operator-secret.test.ts && npx -y tsx lib/kyc-vault-key.test.ts && npx -y tsx lib/view-cache.test.ts && npx -y tsx lib/indexer-poller.test.ts && npx -y tsx lib/vrx.no-direct-rpc.test.ts && npx -y tsx lib/vrx-server.hash.test.ts && npx -y tsx lib/config.providers.test.ts && npx -y tsx lib/config.network-urls.test.ts && npx -y tsx lib/status-store.diff.test.ts && npx -y tsx lib/balance-server.test.ts && npx -y tsx lib/rpc-usage.test.ts && npx -y tsx lib/status-cache.test.ts && npx -y tsx lib/faucet-server.test.ts && npx -y tsx lib/vrx-server.pool.test.ts && npx -y tsx lib/bus.test.ts && npx -y tsx lib/sync-loop.test.ts",
+    "test:exclusive": "npx -y tsx lib/vrx.exclusive.test.ts",
+    "test:isolation": "npx -y tsx lib/participant.test.ts"
+  },
+  "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.20.2",
+    "@near-wallet-selector/core": "^10.1.4",
+    "@near-wallet-selector/meteor-wallet": "^10.1.4",
+    "@near-wallet-selector/modal-ui": "^10.1.4",
+    "@types/leaflet": "^1.9.22",
+    "leaflet": "^1.9.4",
+    "near-api-js": "^5.0.1",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@nationaldesignstudio/rampart-edge": "^2.0.5",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "fast-check": "^4.10.2",
+    "onnxruntime-web": "^1.31.1",
+    "typescript": "^5.7.3"
+  }
+}

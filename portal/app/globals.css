@@ -1,0 +1,331 @@
+/* Global styles — the parts inline styles can't do::focus states, responsive tweaks,
+   and a compact baseline. The portal uses inline style objects elsewhere; this covers the rest.
+ VOCAB note: user-facing wording is the (Developer/Agency/Agent/unit/access). */
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ── Inputs: always a visible (dim) blue-ish border; brighter blue + glow on focus ──
+ the ask: border visible both when NOT focused (partly) and when focused (clearly blue). */
+input,
+textarea,
+select {
+  border: 2px solid #8fa4e8 !important; /* strong, clearly visible blue when unfocused */
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: #a9bbff !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #5b8bff !important; /* vivid blue on focus */
+  box-shadow: 0 0 0 3px rgba(91, 139, 255, 0.45) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7488;
+}
+
+/* ── Dropdowns: dark background + light text on the control AND its option list ──
+   Without this the native <option> popup renders on the OS default (white), so pale theme text
+ became unreadable (the report). Set both the control and the options explicitly; the popup
+   colours are honoured by Chromium/Firefox on Win/Linux. */
+select {
+  background-color: #0e1119 !important;
+  color: #e8ecf4 !important;
+}
+select option,
+select optgroup {
+  background-color: #0e1119; /* the popup list background */
+  color: #e8ecf4;
+}
+select option:checked,
+select option:hover {
+  background-color: #1a2233;
+  color: #ffffff;
+}
+
+/* Buttons: comfortable tap target on phones */
+button {
+  min-height: 40px;
+}
+
+/* ── The on-chain "buzz" (theme "Vetted") ────────────────────────────────────────────
+   Solidity is the calm frame; motion is RESERVED for on-chain truth — a live/pending state
+   pulses, a landed transaction flashes green. This is how the UI projects TRUST: it shows the
+   chain actually working, rather than decorating. Respects reduced-motion. */
+
+/* Live/pending status dot — a soft breathing pulse. */
+.vrx-pulse {
+  animation: vrxPulse 1.6s ease-in-out infinite;
+}
+@keyframes vrxPulse {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0 currentColor); }
+  50% { opacity: 0.55; filter: drop-shadow(0 0 5px currentColor); }
+}
+
+/* Confirm flash — a one-shot green glow when a write lands on-chain. */
+.vrx-flash {
+  animation: vrxFlash 1.1s ease-out 1;
+}
+@keyframes vrxFlash {
+  0% { box-shadow: 0 0 0 0 rgba(56, 211, 159, 0.55); }
+  100% { box-shadow: 0 0 0 14px rgba(56, 211, 159, 0); }
+}
+
+/* Working shimmer — the "process is going" cue on an in-flight action row. */
+.vrx-working {
+  background-image: linear-gradient(90deg, transparent, rgba(61,125,255,0.14), transparent);
+  background-size: 200% 100%;
+  animation: vrxShimmer 1.2s linear infinite;
+}
+@keyframes vrxShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Event-log rows that deep-link to their subject — lift on hover/focus so "clickable" reads. */
+.vrx-eventrow { transition: background 0.12s ease, transform 0.08s ease; }
+.vrx-eventrow:hover { background: #1b2434 !important; }
+.vrx-eventrow:focus-visible { outline: 2px solid #3d7dff; outline-offset: 1px; }
+
+/* Warroom mini stacking plan: tiny unit box + a CSS-only hover tooltip (no per-cell JS state, so a full
+   ~1,558-box wall stays cheap). The tip is hidden until the box is hovered, then floats above it. */
+.vrx-minibox:hover { outline: 1px solid #5b7cff; outline-offset: 0; z-index: 50; }
+.vrx-minitip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 180px;
+  max-width: 260px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: #0b0f17;
+  border: 1px solid #2f3a52;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  color: #e8ecf4;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease;
+  z-index: 60;
+  white-space: normal;
+}
+.vrx-minibox:hover .vrx-minitip { opacity: 1; visibility: visible; }
+/* Flip the tip BELOW the box on the top floors of a card, where there's no room above it. */
+.vrx-minirow-top .vrx-minitip { bottom: auto; top: calc(100% + 6px); }
+
+/* Spinner — a small rotating ring for progressive-load indicators (A1). */
+.vrx-spin {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: vrxSpin 0.7s linear infinite;
+  vertical-align: middle;
+  opacity: 0.8;
+}
+@keyframes vrxSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Gentle fade+rise for panels appearing (the unit-detail screen). */
+.vrx-fade-in {
+  animation: vrxFadeIn 0.28s ease-out 1;
+}
+@keyframes vrxFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton block — a shimmering placeholder for content still loading (layout stability). */
+.vrx-skeleton {
+  background: linear-gradient(90deg, #131a28 25%, #1b2436 37%, #131a28 63%);
+  background-size: 400% 100%;
+  animation: vrxSkeleton 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes vrxSkeleton {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vrx-pulse, .vrx-flash, .vrx-working { animation: none; }
+  .vrx-spin { animation-duration: 1.4s; }
+  .vrx-fade-in { animation: none; }
+  .vrx-skeleton { animation: none; }
+}
+
+/* Links in the nav wrap gracefully on small screens */
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── DashboardShell responsive collapse ─────────────────────────────────
+   On a narrow viewport the left sidebar stops being a side column and becomes a
+   horizontal scrollable row ABOVE the content, which goes full-width. So the
+   laptop dashboard degrades to a usable mobile stack (topbar → section chips →
+   the one selected panel) with no horizontal overflow. Agency is mostly mobile —
+   this is the rule that keeps it from regressing. */
+@media (max-width: 860px) {
+  .vrx-shell-body {
+    flex-direction: column !important;
+  }
+  .vrx-shell-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-right: none !important;
+    border-bottom: 1px solid #1c2434 !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+    align-items: center;
+  }
+  .vrx-shell-sidebar::-webkit-scrollbar { display: none; }
+  /* Nav groups sit inline; the divider becomes a vertical hairline between the
+     route links and the section switcher. */
+  .vrx-shell-sidebar > nav {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+  }
+  .vrx-shell-sidebar > div {
+    width: 1px !important;
+    height: 22px !important;
+    margin: 0 4px !important;
+    flex-shrink: 0;
+  }
+  .vrx-shell-sidebar a,
+  .vrx-shell-sidebar button {
+    white-space: nowrap;
+    flex-shrink: 0;
+    /* In the horizontal mobile row, the section buttons carry an inline width:100% (fine for the
+       vertical desktop sidebar) which here makes EACH button balloon to the full viewport width —
+       the "huge empty space per button" that scrolls one-at-a-time. Shrink each to its content so
+       they sit as a compact chip row. The inner <span flex:1> label also must stop stretching. */
+    width: auto !important;
+  }
+  .vrx-shell-sidebar button > span {
+    flex: 0 0 auto !important;
+  }
+}
+
+/* ── Responsive / compact ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  main {
+    padding: 20px 14px !important;
+  }
+  h1 {
+    font-size: 22px !important;
+  }
+  h2 {
+    font-size: 16px !important;
+  }
+  /* Cards get tighter padding on phones */
+  .vrx-card {
+    padding: 14px !important;
+    margin-top: 14px !important;
+  }
+  /* The header nav becomes a horizontal scroller instead of overflowing */
+  header nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  header nav::-webkit-scrollbar {
+    display: none;
+  }
+  header nav a {
+    white-space: nowrap;
+  }
+  /* Settings dropdown: the ROOT cause of the panel opening off-screen is the header
+     wrapping the wallet+gear group to a new row that STARTS AT THE LEFT — so the gear sits on the
+     left and its right:0 panel runs off the left edge. Fix it at the source: keep the header on ONE
+     row (no wrap) and let the left nav scroll horizontally instead (that scroller already exists
+     below). The gear stays top-RIGHT, so its normal absolute right:0 panel sits correctly under it. */
+  header {
+    flex-wrap: nowrap !important;
+  }
+  header > nav {
+    min-width: 0 !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  header > nav::-webkit-scrollbar { display: none; }
+  /* Belt-and-suspenders: never let the panel exceed the viewport width. */
+  .vrx-settings-panel {
+    max-width: calc(100vw - 24px) !important;
+  }
+  /* Master-detail panels (Direct enquiries list+chat, Incoming bookings list+detail) stack on phones
+ instead of cramming two columns into a ~360px width (phone review). The list becomes a
+     horizontal scroller strip above the detail, and the detail takes the full width below it. */
+  .vrx-master-detail {
+    grid-template-columns: 1fr !important;
+  }
+  .vrx-master-detail > .vrx-md-list {
+    flex-direction: row !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .vrx-master-detail > .vrx-md-list::-webkit-scrollbar { display: none; }
+  .vrx-master-detail > .vrx-md-list > button {
+    flex: 0 0 auto;
+    min-width: 180px;
+    max-width: 220px;
+  }
+}
+
+/* ── S159c PWA / safe-area + mobile-sweep finish ──────────────────────────────
+   We set viewport-fit:cover (layout.tsx) so an installed/standalone PWA paints
+   edge-to-edge behind the notch + home indicator. That means content can hide
+   under them unless we pad by the safe-area insets. Apply the insets at the body
+   so every page inherits them without touching per-page inline padding; on a
+ normal (non-notched) device env resolves to 0, so this is a no-op there. */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  /* Leave room for the home indicator on the bottom (phones in standalone). */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 640px) {
+  /* Comfortable touch targets on phones — the role-picker, agency-access pick,
+     and any submit-styled button should be tappable, not fiddly. 44px is the
+     platform minimum. Only bumps the min-height, never shrinks anything. Scoped
+     to main so it never touches the dense nav/section chips (which are
+     intentionally compact and already scroll horizontally). */
+  main button, main a[role="button"] {
+    min-height: 44px;
+  }
+}

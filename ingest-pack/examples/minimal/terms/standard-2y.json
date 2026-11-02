@@ -1,0 +1,12 @@
+{
+  "_comment": "Reusable PaymentTerms block (portal/lib/catalog.ts PaymentTerms). The developer publishes ALLOWED options per category; the agent's offer picks ONE from each -> the concrete plan hashed into the opaque request_hash. bookingFee USD; deposit/onContract/ongoing/onKey/tax in %.",
+  "bookingFee": [1500],
+  "depositPct": [20, 30],
+  "onContract": [{ "installments": 1, "amountPct": 10 }],
+  "ongoing": [{ "installments": 24, "amountPct": 2 }],
+  "frequencyDays": [30],
+  "onKeyPct": [22],
+  "taxPct": [0],
+  "contractDays": 7,
+  "caps": {}
+}

@@ -1,0 +1,236 @@
+{
+  "miracle-tower": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-approach.jpeg",
+      "ext-3-amenity-deck.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-balcony.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-site-plan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "pearls-view": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-approach.jpeg",
+      "ext-3-beach-frontage.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-terrace.jpeg"
+    ],
+    "facilities": [
+      "fac-1-beachfront-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-site-plan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "skyline-tower": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-approach.jpeg",
+      "ext-3-sky-deck.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-penthouse-duplex.jpeg"
+    ],
+    "facilities": [
+      "fac-1-infinity-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-site-plan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "garden-court": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-approach.jpeg",
+      "ext-3-garden-courtyard.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-balcony.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-site-plan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "parkgate": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-cluster.jpeg",
+      "ext-3-amenity-courtyard.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-balcony.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-masterplan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "gardengate": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-cluster.jpeg",
+      "ext-3-amenity-courtyard.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-balcony.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-masterplan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "palmgate": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-cluster.jpeg",
+      "ext-3-amenity-courtyard.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-balcony.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-masterplan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "northpoint": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-approach.jpeg",
+      "ext-3-resort-deck.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-living-2br.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-site-plan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  },
+  "southbay": {
+    "complex": null,
+    "exterior": [
+      "ext-1-hero.jpeg",
+      "ext-2-siblings.jpeg",
+      "ext-3-resort-deck.jpeg",
+      "ext-4-night.jpeg"
+    ],
+    "interior": [
+      "int-1-living.jpeg",
+      "int-2-kitchen.jpeg",
+      "int-3-bedroom.jpeg",
+      "int-4-bathroom.jpeg",
+      "int-5-studio.jpeg"
+    ],
+    "facilities": [
+      "fac-1-pool.jpeg",
+      "fac-2-fitness-sauna.jpeg",
+      "fac-3-lobby.jpeg"
+    ],
+    "floorplans": [
+      "flr-1-floor-plate.jpeg",
+      "flr-2-site-plan.jpeg",
+      "flr-3-unit-lineup.jpeg"
+    ]
+  }
+}

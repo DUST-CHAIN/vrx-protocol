@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="#fcfdfe"/>
+
+  <!-- ground line -->
+  <line x1="120" y1="460" x2="680" y2="460" stroke="#9fb0bf" stroke-width="1.5"/>
+
+  <!-- swimming pool (oblong) -->
+  <ellipse cx="400" cy="400" rx="220" ry="60" fill="#f6f8fa" stroke="#334455" stroke-width="2"/>
+  <!-- water ripple lines -->
+  <g stroke="#9fb0bf" stroke-width="1.5" fill="none">
+    <path d="M300 390 q20 -10 40 0 t40 0 t40 0"/>
+    <path d="M300 410 q20 -10 40 0 t40 0 t40 0"/>
+    <path d="M430 395 q20 -10 40 0 t40 0"/>
+    <path d="M430 415 q20 -10 40 0 t40 0"/>
+  </g>
+
+  <!-- palm tree, right -->
+  <path d="M595 455 Q602 380 600 300" fill="none" stroke="#334455" stroke-width="2"/>
+  <g stroke="#334455" stroke-width="2" fill="none">
+    <path d="M600 300 Q560 280 525 290"/>
+    <path d="M600 300 Q640 280 675 292"/>
+    <path d="M600 300 Q575 262 545 250"/>
+    <path d="M600 300 Q625 262 655 250"/>
+    <path d="M600 300 Q600 258 600 238"/>
+  </g>
+
+  <!-- lounge chair, left -->
+  <g stroke="#334455" stroke-width="2" fill="#eef2f6">
+    <!-- reclined back -->
+    <path d="M150 400 L210 400 L245 350 L185 350 Z"/>
+    <!-- seat -->
+    <rect x="200" y="400" width="80" height="16"/>
+  </g>
+  <!-- legs -->
+  <line x1="210" y1="416" x2="205" y2="440" stroke="#334455" stroke-width="2"/>
+  <line x1="272" y1="416" x2="277" y2="440" stroke="#334455" stroke-width="2"/>
+
+  <!-- caption -->
+  <text x="400" y="535" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="18" letter-spacing="3" fill="#5a6b7a">FACILITIES</text>
+</svg>

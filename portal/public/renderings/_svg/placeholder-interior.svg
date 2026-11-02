@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="#fcfdfe"/>
+
+  <!-- floor line -->
+  <line x1="180" y1="430" x2="620" y2="430" stroke="#334455" stroke-width="2"/>
+
+  <!-- window with light lines -->
+  <rect x="210" y="150" width="130" height="110" fill="#f6f8fa" stroke="#334455" stroke-width="2"/>
+  <line x1="275" y1="150" x2="275" y2="260" stroke="#9fb0bf" stroke-width="1.5"/>
+  <line x1="210" y1="205" x2="340" y2="205" stroke="#9fb0bf" stroke-width="1.5"/>
+  <!-- light rays -->
+  <g stroke="#9fb0bf" stroke-width="1.5">
+    <line x1="340" y1="175" x2="400" y2="200"/>
+    <line x1="340" y1="205" x2="410" y2="235"/>
+    <line x1="340" y1="235" x2="400" y2="270"/>
+  </g>
+
+  <!-- framed picture on wall -->
+  <rect x="470" y="165" width="90" height="70" fill="#eef2f6" stroke="#334455" stroke-width="2"/>
+  <line x1="470" y1="210" x2="560" y2="210" stroke="#9fb0bf" stroke-width="1.5"/>
+  <line x1="505" y1="165" x2="490" y2="210" stroke="#9fb0bf" stroke-width="1.5"/>
+
+  <!-- floor lamp, right -->
+  <line x1="610" y1="430" x2="610" y2="300" stroke="#334455" stroke-width="2"/>
+  <path d="M588 300 L632 300 L622 262 L598 262 Z" fill="#f6f8fa" stroke="#334455" stroke-width="2"/>
+  <line x1="590" y1="430" x2="630" y2="430" stroke="#334455" stroke-width="2"/>
+
+  <!-- sofa -->
+  <g stroke="#334455" stroke-width="2" fill="#f6f8fa">
+    <!-- back -->
+    <rect x="250" y="320" width="230" height="55" rx="10"/>
+    <!-- seat base -->
+    <rect x="240" y="370" width="250" height="40" rx="10" fill="#eef2f6"/>
+    <!-- arms -->
+    <rect x="235" y="350" width="28" height="60" rx="8"/>
+    <rect x="467" y="350" width="28" height="60" rx="8"/>
+  </g>
+  <!-- cushion divider -->
+  <line x1="365" y1="372" x2="365" y2="408" stroke="#9fb0bf" stroke-width="1.5"/>
+  <!-- legs -->
+  <line x1="255" y1="410" x2="255" y2="430" stroke="#334455" stroke-width="2"/>
+  <line x1="475" y1="410" x2="475" y2="430" stroke="#334455" stroke-width="2"/>
+
+  <!-- caption -->
+  <text x="400" y="535" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="18" letter-spacing="3" fill="#5a6b7a">INTERIOR</text>
+</svg>

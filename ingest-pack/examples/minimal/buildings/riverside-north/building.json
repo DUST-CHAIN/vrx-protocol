@@ -1,0 +1,33 @@
+{
+  "id": "riverside-north",
+  "name": "Riverside North",
+  "complexId": "riverside",
+  "companyId": "acme-riverside-co",
+  "tagline": "Wake up to the river",
+  "developer": "Acme Developments",
+  "area": "Riverside District",
+  "address": "1 Riverside Road",
+  "type": "High Rise",
+  "stories": 20,
+  "units": 2,
+  "completion": "Off-plan — completes 2028",
+  "constructionEnd": "2028-06-30",
+  "reservationFeeUsd": 1500,
+  "bookingDepositUsd": 1500,
+  "maintenancePerSqmUsd": 1.2,
+  "sinkingFundPerSqmUsd": 15,
+  "transferFeePct": "6.30%",
+  "amenities": ["Sky lounge", "Fitness"],
+  "unitTypes": [
+    { "key": "studio", "label": "Studio", "sqmMin": 28, "sqmMax": 32 },
+    { "key": "1br", "label": "1 Bedroom", "sqmMin": 42, "sqmMax": 48 }
+  ],
+  "termsRef": "standard-2y",
+  "quota": {
+    "sellableSqm": 1200,
+    "foreignQuotaPct": 49,
+    "foreignSoldSqm": 0,
+    "stage": "presale",
+    "labels": { "freehold": "Foreign Freehold", "company": "Thai Company", "private": "Thai Private" }
+  }
+}

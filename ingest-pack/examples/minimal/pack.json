@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-10-01T00:00:00Z",
+  "generatedBy": "vrx-materials 0.0.0 (hand-written example)",
+  "developer": {
+    "id": "acme-developments",
+    "name": "Acme Developments",
+    "holdingCompany": "Acme Holdings Ltd",
+    "nearAccount": "acme-dev-01.testnet",
+    "logo": "complexes/riverside/media/logo.png"
+  },
+  "companies": [
+    { "id": "acme-riverside-co", "name": "Acme Riverside Co., Ltd", "registration": "TH-0105500000001" }
+  ],
+  "tree": {
+    "complexes": [
+      {
+        "id": "riverside",
+        "name": "Riverside",
+        "companyId": "acme-riverside-co",
+        "area": "Riverside District",
+        "amenities": ["Shared pool", "Riverfront promenade", "24h security"],
+        "buildings": ["riverside-north"]
+      }
+    ]
+  },
+  "checksums": {
+    "buildings/riverside-north/building.json": "0000000000000000000000000000000000000000000000000000000000000000",
+    "buildings/riverside-north/units.csv": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

@@ -1,0 +1,250 @@
+---
+import "../styles/brand.css";
+interface Props { title?: string; description?: string; noindex?: boolean }
+const {
+  title = "Vetted Realty — the trusted marketplace for unique inventory",
+  description = "VRX is a private, on-chain reservation primitive: one source of truth for who reserved what. Vetted parties view, book, reserve and settle — privately and provably.",
+  noindex = false,
+} = Astro.props as Props;
+// Anchor links point at the home page (./#…) so they work from any page (e.g. /ask).
+const nav = [
+  ["What it is", "./#what"],
+  ["How it works", "./#how"],
+  ["For you", "./for-you.html"],
+  ["Trust", "./#trust"],
+  ["Roadmap", "./#roadmap"],
+  ["Glossary", "./#glossary"],
+  ["Ask VRX", "./ask.html"],
+  ["Contact", "./#contact"],
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/img/hero-ecosystem.jpg" />
+    <meta name="theme-color" content="#0a0e17" />
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap bar">
+        <a class="brand-mark" href="./">
+          <img class="logo" src="/img/logo-vrx.svg" alt="VRX" width="28" height="28" />
+          Vetted&nbsp;Realty
+        </a>
+        <nav class="nav-desktop">
+          {nav.map(([label, href]) => <a href={href}>{label}</a>)}
+        </nav>
+        <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <nav id="nav-mobile" class="nav-mobile" hidden>
+        {nav.map(([label, href]) => <a href={href}>{label}</a>)}
+      </nav>
+    </header>
+    <main id="top">
+      <slot />
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:center;">
+          <div>
+            <strong style="color:var(--text)">Vetted Realty</strong> · VRX — a private, on-chain reservation primitive.<br />
+            Built on NEAR. A product of a decade of real-world property deployment.
+          </div>
+          <div>
+            <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a>
+          </div>
+        </div>
+        <p style="margin-top:22px;color:var(--faint);font-size:0.82rem;">
+          © {new Date().getFullYear()} Vetted Realty. No personal data or deal terms are ever published on-chain —
+          privacy is designed in, not bolted on.
+        </p>
+      </div>
+    </footer>
+
+    <!-- Image lightbox: tap any figure image to open it full-screen + zoomable. -->
+    <div id="lightbox" hidden aria-hidden="true">
+      <button id="lightbox-close" type="button" aria-label="Close image">✕</button>
+      <div id="lightbox-scroll"><img id="lightbox-img" alt="" /></div>
+    </div>
+
+    <script>
+      // ── Mobile menu toggle ──────────────────────────────────────────────
+      (() => {
+        const btn = document.getElementById("nav-toggle");
+        const menu = document.getElementById("nav-mobile");
+        if (!btn || !menu) return;
+        function set(open) { menu.hidden = !open; btn.setAttribute("aria-expanded", open ? "true" : "false"); }
+        btn.addEventListener("click", () => set(menu.hidden));
+        // close when a link is tapped or when tapping outside
+        menu.addEventListener("click", (e) => { if (e.target.closest("a")) set(false); });
+        document.addEventListener("click", (e) => {
+          if (!menu.hidden && !e.target.closest("header.site")) set(false);
+        });
+      })();
+
+      // ── Image lightbox with JS-driven zoom/pan ──────────────────────────
+      // The PAGE is locked (viewport user-scalable=no), which also disables NATIVE pinch inside the
+      // lightbox — so the lightbox implements its OWN zoom: pinch (2-finger), double-tap/dbl-click to
+      // toggle 2.5×, and drag/pan while zoomed. Only the lightbox image zooms; the page never does.
+      (() => {
+        const box = document.getElementById("lightbox");
+        const img = document.getElementById("lightbox-img");
+        const scroll = document.getElementById("lightbox-scroll");
+        const closeBtn = document.getElementById("lightbox-close");
+        if (!box) return;
+
+        let scale = 1, tx = 0, ty = 0;              // current transform
+        const MIN = 1, MAX = 5;
+        function apply() { img.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`; }
+        function reset() { scale = 1; tx = 0; ty = 0; img.style.transition = "transform .2s ease"; apply(); }
+
+        function open(src, alt) {
+          img.src = src; img.alt = alt || "";
+          box.hidden = false; box.setAttribute("aria-hidden", "false");
+          document.body.style.overflow = "hidden";
+          reset();
+        }
+        function close() {
+          box.hidden = true; box.setAttribute("aria-hidden", "true");
+          document.body.style.overflow = ""; img.src = "";
+        }
+
+        document.querySelectorAll("figure img").forEach((el) => {
+          el.style.cursor = "zoom-in";
+          el.addEventListener("click", () => open(el.currentSrc || el.src, el.alt));
+        });
+        closeBtn.addEventListener("click", close);
+        // tap/click the empty backdrop to close (but not while zoomed — then it's a pan surface)
+        box.addEventListener("click", (e) => { if ((e.target === box || e.target === scroll) && scale === 1) close(); });
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !box.hidden) close(); });
+
+        // Double-click / double-tap toggles zoom around the point.
+        function toggleZoom(cx, cy) {
+          img.style.transition = "transform .2s ease";
+          if (scale > 1) { reset(); return; }
+          scale = 2.5;
+          const rect = img.getBoundingClientRect();
+          // keep the tapped point roughly under the finger
+          tx = (rect.left + rect.width / 2 - cx) * (scale - 1);
+          ty = (rect.top + rect.height / 2 - cy) * (scale - 1);
+          apply();
+        }
+        img.addEventListener("dblclick", (e) => toggleZoom(e.clientX, e.clientY));
+
+        // Touch: pinch to zoom, drag to pan, double-tap to toggle.
+        let startDist = 0, startScale = 1, lastTap = 0;
+        let panX = 0, panY = 0, startTx = 0, startTy = 0, panning = false;
+        function dist(t) { const dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.hypot(dx, dy); }
+        box.addEventListener("touchstart", (e) => {
+          img.style.transition = "none";
+          if (e.touches.length === 2) { startDist = dist(e.touches); startScale = scale; panning = false; }
+          else if (e.touches.length === 1) {
+            const now = Date.now();
+            if (now - lastTap < 300) { toggleZoom(e.touches[0].clientX, e.touches[0].clientY); lastTap = 0; }
+            else {
+              lastTap = now;
+              if (scale > 1) { panning = true; panX = e.touches[0].clientX; panY = e.touches[0].clientY; startTx = tx; startTy = ty; }
+            }
+          }
+        }, { passive: true });
+        box.addEventListener("touchmove", (e) => {
+          if (e.touches.length === 2) {
+            scale = Math.min(MAX, Math.max(MIN, startScale * (dist(e.touches) / startDist)));
+            apply();
+          } else if (panning && e.touches.length === 1) {
+            tx = startTx + (e.touches[0].clientX - panX);
+            ty = startTy + (e.touches[0].clientY - panY);
+            apply();
+          }
+        }, { passive: true });
+        box.addEventListener("touchend", (e) => {
+          if (scale <= 1.02) reset();          // snapped back to fit
+          if (e.touches.length === 0) panning = false;
+        });
+      })();
+
+      // Scroll-reveal: add.is-in when an element with.reveal /.reveal-stagger enters view.
+      // No-JS or reduced-motion users see everything immediately (CSS keeps.reveal visible then).
+      (() => {
+        const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const els = document.querySelectorAll(".reveal, .reveal-stagger");
+        if (reduce || !("IntersectionObserver" in window)) {
+          els.forEach((el) => el.classList.add("is-in"));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+            }
+          },
+          { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+        );
+        els.forEach((el) => io.observe(el));
+      })();
+
+      // Glossary terms on touch: tap to open the definition as a bottom card, tap again / outside to close.
+      // We MOVE the popup to <body> while open so no transformed ancestor (hero/figure/reveal animations)
+      // can hijack its position:fixed — that was the "tooltip stuck mid-page / off-screen" bug. On close we
+      // put it back where it belongs. Desktop keeps the hover popup and is untouched.
+      (() => {
+        const canHover = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+        if (canHover) return;
+        let openTerm = null, movedPop = null, placeholder = null, backdrop = null;
+
+        function closeOpen() {
+          if (!openTerm) return;
+          if (movedPop && placeholder && placeholder.parentNode) {
+            placeholder.parentNode.replaceChild(movedPop, placeholder); // restore into the sentence
+          }
+          movedPop && movedPop.classList.remove("term-pop-float");
+          backdrop && backdrop.remove();
+          openTerm.classList.remove("term-open");
+          openTerm = movedPop = placeholder = backdrop = null;
+        }
+
+        document.addEventListener("click", (e) => {
+          if (backdrop && e.target === backdrop) { closeOpen(); return; }
+          const term = e.target.closest(".term");
+          const pop = term && term.querySelector(".term-pop");
+          if (term && pop) {
+            e.preventDefault();
+            if (openTerm === term) { closeOpen(); return; }
+            closeOpen();
+            // backdrop
+            backdrop = document.createElement("div");
+            backdrop.className = "term-backdrop";
+            document.body.appendChild(backdrop);
+            // hoist the popup to body (leave a placeholder to restore it)
+            placeholder = document.createComment("term-pop");
+            pop.parentNode.replaceChild(placeholder, pop);
+            pop.classList.add("term-pop-float");
+            document.body.appendChild(pop);
+            movedPop = pop; openTerm = term; term.classList.add("term-open");
+          } else if (!term) {
+            closeOpen();
+          }
+        });
+        window.addEventListener("hashchange", closeOpen);
+      })();
+    </script>
+  </body>
+</html>

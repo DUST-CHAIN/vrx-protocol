@@ -1,0 +1,393 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Term from "@components/Term.astro";
+import { ROLES } from "@data/roles";
+import { GLOSSARY } from "@data/glossary";
+---
+<Layout>
+  <!-- ─────────────────────────── HERO ─────────────────────────── -->
+  <section id="hero" style="padding-top:24px;">
+    <div class="wrap">
+      <span class="seal">Vetted</span>
+      <h1 style="margin-top:18px;">
+        The trusted, global marketplace<br />for unique assets.
+      </h1>
+      <p class="lead" style="max-width:760px;">
+        <strong style="color:var(--text)">VRX</strong> is a private,
+        <Term k="on-chain">on-chain</Term>
+        <Term k="primitive">reservation primitive</Term> — one
+        <Term k="source-of-truth">source of truth</Term> for who reserved what. An operator with
+        unique stock feeds live availability to many mutually-distrusting sales teams, who
+        <strong style="color:var(--text)">view → book → reserve → settle</strong> — privately,
+        provably, and without ever exposing a name, a price, or a deal term to the public.
+      </p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin:26px 0 10px;">
+        <a class="btn btn-primary" href="#contact">Join the private alpha</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <div class="status-row" style="margin-top:8px;">
+        <span class="dot live"></span> Live on test network, with the full product built &amp; demo-able today
+        &nbsp;·&nbsp; private alpha opening soon
+      </div>
+
+      <figure style="margin-top:44px;">
+        <img
+          src="/img/hero-ecosystem.jpg"
+          alt="The Vetted Realty ecosystem: a developer's node feeds verified availability on-chain, synced globally to developers, agencies, agents and buyers."
+          width="1600" height="900"
+        />
+        <figcaption>
+          The ecosystem at a glance: a developer's <Term k="node">node</Term> publishes verified
+          availability on-chain; <Term k="regional-node">regional nodes</Term> keep it in sync
+          worldwide; vetted developers, agencies, agents and buyers all read one live truth.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── WHAT IT IS ─────────────────────────── -->
+  <section id="what">
+    <div class="wrap">
+      <p class="eyebrow">What it is</p>
+      <h2>A single, honest record that no one can quietly rewrite.</h2>
+      <p class="lead" style="max-width:820px;">
+        Most markets for high-value, one-of-a-kind items run on mutually-distrusting copies: the
+        developer's spreadsheet, each agency's own list, the agent's memory. They drift, they
+        double-sell, and disputes take months. VRX replaces all of that with one shared record
+        everyone can trust — and still keeps every sensitive detail private.
+      </p>
+
+      <div class="grid cols-3 reveal reveal-stagger" style="margin-top:32px;">
+        <div class="card">
+          <h3>One source of truth</h3>
+          <p>
+            Availability lives in one place that every permitted party reads live. No stale lists,
+            no two agents selling unit&nbsp;312 at once.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Private by design</h3>
+          <p>
+            Every real-world identifier — who, which unit, what price — is stored only as a sealed
+            <Term k="hash">fingerprint</Term>. The chain shows "available / held / settled", never
+            the deal. <Term k="privacy-moat">Privacy is designed in</Term>.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Provable forever</h3>
+          <p>
+            Each agreement is time-stamped and tamper-proof. A deal struck today is exactly as
+            provable years later — <Term k="provenance">full provenance</Term>, no paper to lose.
+          </p>
+        </div>
+      </div>
+
+      <p style="margin-top:28px;max-width:860px;">
+        It began as the engine behind a decade of real property sales, and it is built to be
+        <strong style="color:var(--text)">domain-agnostic</strong>: at its core it doesn't "know" it's
+        real estate. It fits <strong style="color:var(--text)">any high-value item that needs no
+        shipping</strong> — the thing changes hands by deed, key, or access, not a courier:
+        land, houses and condos · fine art · event and travel tickets · software licence keys ·
+        AI models and agents · and more we haven't folded in yet. Each is a
+        <Term k="non-substitutable">unique, non-substitutable</Term> asset. Real estate is the
+        proof; the primitive is the product.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── HOW IT WORKS ─────────────────────────── -->
+  <section id="how">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2>From the developer's office to a global marketplace — in one flow.</h2>
+
+      <figure style="margin:26px 0 34px;">
+        <img
+          src="/img/how-it-works.jpg"
+          alt="Three-panel flow: the developer's office publishes availability; it is verified on-chain; vetted users transact in the marketplace."
+          width="1600" height="640"
+        />
+        <figcaption>
+          Developer materials → the developer's <Term k="node">node</Term> → verified by VRX
+          <Term k="on-chain">on-chain</Term> → synced via <Term k="regional-node">regional nodes</Term>
+          → vettedrealty.com users.
+        </figcaption>
+      </figure>
+
+      <div class="grid cols-3 reveal reveal-stagger">
+        <div class="card raised">
+          <p class="chip">step 1</p>
+          <h3 style="margin-top:10px;">Publish</h3>
+          <p>
+            A <Term k="developer">developer</Term> runs their own secure node and publishes live
+            availability for their units. Only availability goes out — prices, buyers and milestones
+            stay sealed and private.
+          </p>
+        </div>
+        <div class="card raised">
+          <p class="chip">step 2</p>
+          <h3 style="margin-top:10px;">Reserve</h3>
+          <p>
+            A vetted <Term k="agent">agent</Term> browses the live truth, requests to book a specific
+            unit for a buyer, and chats directly with the decision-maker. Agreed units are placed on
+            a <Term k="hold">hold</Term> so no one else can take them.
+          </p>
+        </div>
+        <div class="card raised">
+          <p class="chip">step 3</p>
+          <h3 style="margin-top:10px;">Settle</h3>
+          <p>
+            Deposit and <Term k="settlement">settlement</Term> complete the deal. Amounts stay
+            private; the shared record simply moves the unit from held to settled — provable to every
+            permitted party, invisible to everyone else.
+          </p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:28px;">
+        <h3>Why "trusted <em>and</em> trustless"?</h3>
+        <p>
+          <Term k="vetted">Vetted</Term> means every participant is verified before they can act — a
+          network of known, accountable parties. <Term k="trustless">Trustless</Term> means you still
+          don't have to <em>rely</em> on anyone's goodwill, because the record itself enforces the
+          rules and proves what happened. You get the comfort of a vetted club <strong style="color:var(--text)">and</strong>
+          the certainty of math.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── ROLES (teaser → /for-you) ─────────────────────────── -->
+  <section id="roles">
+    <div class="wrap">
+      <p class="eyebrow">For you</p>
+      <h2>Read it from your own side of the table.</h2>
+      <p class="lead" style="max-width:760px;">
+        Whoever you are in the deal, VRX looks different — and works for you. Pick your role to see what
+        it is, how it works, how you'll use it, and why you can trust it.
+      </p>
+
+      <div class="grid cols-3 reveal reveal-stagger" style="margin-top:26px;">
+        {ROLES.map((r) => (
+          <a class="card" href={`./for-you.html#${r.id}`} style="text-decoration:none;border-left:3px solid var(--accent);display:block;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <h3 style="margin:0;">{r.name}</h3>
+              {r.tag === "coming soon"
+                ? <span class="status-row"><span class="dot soon"></span>Planned</span>
+                : <span class="chip">{r.tag}</span>}
+            </div>
+            <p style="margin:10px 0 0;">{r.tagline}</p>
+          </a>
+        ))}
+      </div>
+
+      <p style="margin-top:22px;">
+        <a class="btn btn-ghost" href="./for-you.html">See all roles in detail →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── TRUST / MOAT ─────────────────────────── -->
+  <section id="trust">
+    <div class="wrap">
+      <p class="eyebrow">Why it's safe</p>
+      <h2>The hard guarantees — stated plainly.</h2>
+      <div class="grid cols-2 reveal reveal-stagger" style="margin-top:28px;">
+        <div class="card">
+          <h3>Nothing sensitive is ever public</h3>
+          <p>
+            No name, no price, no deal term, no payment ever touches the public chain. They live
+            off-chain as <Term k="hmac">keyed seals</Term> — fingerprints only the key-holder can
+            verify. The world sees that a unit is reserved; it can never see the deal.
+          </p>
+        </div>
+        <div class="card">
+          <h3>No one can rewrite history</h3>
+          <p>
+            Once an agreement or reservation is sealed <Term k="on-chain">on-chain</Term>, it cannot
+            be secretly altered or back-dated — not by a counterparty, not by us. Disputes get short
+            because the record is the referee.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Every item is specific</h3>
+          <p>
+            VRX treats inventory as <Term k="non-substitutable">non-substitutable</Term>: unit 312 is
+            not unit 311. You reserve <em>the</em> thing, and its value tracks the specific thing —
+            no bait-and-switch, no quiet substitution.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Everyone is vetted</h3>
+          <p>
+            Participation requires verification. Identity is checked once, sealed, and reusable — so
+            the whole network is made of known, accountable parties. <Term k="trustless">Trustless</Term>
+            safety on top of a <Term k="vetted">vetted</Term> membership.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── VISION / PUBLIC GOOD ─────────────────────────── -->
+  <section id="vision">
+    <div class="wrap">
+      <p class="eyebrow">The bigger picture</p>
+      <h2>A missing piece of public market infrastructure.</h2>
+      <p class="lead" style="max-width:840px;">
+        Every economy has markets for unique, high-value things — land, homes, equipment, livestock,
+        rights, slots. Almost all of them still run on private, unverifiable, easily-disputed records.
+        A neutral <Term k="primitive">reservation primitive</Term> — one that lets any vetted party
+        reserve any unique thing, privately and provably — is infrastructure the whole economy is
+        missing.
+      </p>
+      <p style="max-width:840px;">
+        VRX is that primitive, proven first in real estate and designed from the ground up to be
+        domain-agnostic. It's built on the principles the best public-interest technology is converging
+        on — <strong style="color:var(--text)">local-first, private by design, and neutral</strong>:
+        your data and keys stay on your own machine, sensitive details never leave it, and no single
+        party owns the rails. Built this way, it could let anyone who is vetted — anywhere — transact
+        unique inventory with the same certainty today reserved for the largest institutions. That is
+        the constitutional idea behind it:
+        <strong style="color:var(--text)">the freedom to transact, globally, with proof instead of trust in a middleman.</strong>
+      </p>
+      <div class="grid cols-2 reveal reveal-stagger" style="margin-top:28px;">
+        <div class="card raised">
+          <h3>Proven, not theoretical</h3>
+          <p>This is not a whitepaper. The engine has run real property sales for over a decade; VRX hardens and generalises it.</p>
+        </div>
+        <div class="card raised">
+          <h3>Domain-agnostic by design</h3>
+          <p>The core doesn't know it's real estate. The same primitive serves any high-value asset that needs no shipping — land, art, tickets, licence keys, AI software — any unique inventory.</p>
+        </div>
+        <div class="card raised">
+          <h3>Local-first &amp; private by design</h3>
+          <p>Data, keys and a local privacy model live on the operator's own machine. Personal details are redacted and sealed locally before anything is shared — privacy isn't a policy, it's the architecture.</p>
+        </div>
+        <div class="card raised">
+          <h3>Built to be shared</h3>
+          <p>Designed as neutral infrastructure a whole ecosystem of vetted operators can build on — not a walled garden.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── ROADMAP ─────────────────────────── -->
+  <section id="roadmap">
+    <div class="wrap">
+      <p class="eyebrow">Roadmap</p>
+      <h2>What's live now, and what's coming.</h2>
+      <p class="lead" style="max-width:760px;">
+        We're building in the open. Here's an honest picture of where things stand.
+      </p>
+      <div class="grid cols-2 reveal reveal-stagger" style="margin-top:28px;">
+        <div class="card">
+          <div class="status-row" style="margin-bottom:12px;"><span class="dot live"></span> Available now</div>
+          <ul class="ticks">
+            <li>The core <Term k="primitive">reservation primitive</Term> — live on test network, battle-tested lineage.</li>
+            <li>Working role portals for developers, agencies and agents.</li>
+            <li>Private, sealed availability, holds and agreements with <Term k="provenance">full provenance</Term>.</li>
+            <li>Signed sale &amp; purchase contracts, payment ledgers, commission &amp; fee settlement.</li>
+            <li>Projected-income reporting + a developer executive view across thousands of units and years of timeline.</li>
+            <li>This AI assistant — ask it anything about VRX, right here on the site.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="status-row" style="margin-bottom:12px;"><span class="dot soon"></span> Coming soon</div>
+          <ul class="ticks" style="--tick:var(--hold);">
+            <li><strong style="color:var(--text)">Private alpha</strong> for invited developers and agencies — weeks away.</li>
+            <li>The <strong style="color:var(--text)">buyer app</strong> for reserving directly — in build now.</li>
+            <li><strong style="color:var(--text)">Developer-local &amp; regional node servers</strong> — distributed scale for global markets.</li>
+            <li>Public, vetted marketplace at vettedrealty.com.</li>
+            <li>Expansion beyond property into other unique-inventory domains.</li>
+          </ul>
+        </div>
+      </div>
+      <p style="margin-top:24px;max-width:820px;color:var(--dim);">
+        With the right backing, this becomes shared infrastructure that virtually anyone vetted can
+        use. If you want to help shape it — as an early developer, an agency, a landowner, or a
+        partner — <a href="#contact">now is the moment to get involved</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── GLOSSARY ─────────────────────────── -->
+  <section id="glossary">
+    <div class="wrap">
+      <p class="eyebrow">Glossary</p>
+      <h2>Plain words for every term.</h2>
+      <p class="lead" style="max-width:760px;">
+        Hover or tap any underlined term anywhere on this page for a quick explanation. Here they all
+        are in one place — no jargon left unexplained.
+      </p>
+      <div class="grid cols-2 reveal" style="margin-top:28px;">
+        {GLOSSARY.map((g) => (
+          <div class="card" id={`g-${g.key}`}>
+            <h3 style="text-transform:capitalize;">{g.term}</h3>
+            <p style="margin:0;">{g.short}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── CONTACT ─────────────────────────── -->
+  <section id="contact">
+    <div class="wrap">
+      <p class="eyebrow">Get involved</p>
+      <h2>Join the private alpha, or just ask us anything.</h2>
+      <p class="lead" style="max-width:720px;">
+        Developers, agencies, agents, landowners and partners — tell us a little about you and we'll
+        be in touch. An on-page AI assistant to answer questions instantly is on the way.
+      </p>
+
+      <div class="grid cols-2" style="margin-top:28px;align-items:start;">
+        <form class="card" method="POST" action="./contact.php">
+          <label style="display:block;margin-bottom:14px;">
+            <span style="display:block;color:var(--dim);font-size:0.9rem;margin-bottom:6px;">Your name</span>
+            <input name="name" required style="width:100%;padding:11px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;" />
+          </label>
+          <label style="display:block;margin-bottom:14px;">
+            <span style="display:block;color:var(--dim);font-size:0.9rem;margin-bottom:6px;">Email</span>
+            <input name="email" type="email" required style="width:100%;padding:11px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;" />
+          </label>
+          <label style="display:block;margin-bottom:14px;">
+            <span style="display:block;color:var(--dim);font-size:0.9rem;margin-bottom:6px;">I am a…</span>
+            <select name="role" style="width:100%;padding:11px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;">
+              <option>Property developer</option>
+              <option>Agency</option>
+              <option>Agent</option>
+              <option>Landowner</option>
+              <option>Buyer</option>
+              <option>Potential partner / investor</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label style="display:block;margin-bottom:18px;">
+            <span style="display:block;color:var(--dim);font-size:0.9rem;margin-bottom:6px;">Message</span>
+            <textarea name="message" rows="4" style="width:100%;padding:11px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;font-family:inherit;"></textarea>
+          </label>
+          <!-- simple honeypot anti-spam; real submitters leave it blank -->
+          <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;" aria-hidden="true" />
+          <button class="btn btn-primary" type="submit">Send</button>
+        </form>
+
+        <div>
+          <div class="card raised" style="margin-bottom:18px;">
+            <h3>Prefer email?</h3>
+            <p style="margin:0;">Write to <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a> and we'll reply personally.</p>
+          </div>
+          <div class="card">
+            <div class="status-row" style="margin-bottom:10px;"><span class="dot live"></span> Live now</div>
+            <h3>Ask the VRX assistant</h3>
+            <p style="margin:0 0 14px;">
+              An AI assistant is ready to answer anything about how VRX works, what it means for your
+              role, or how to join.
+            </p>
+            <a class="btn btn-ghost" href="./ask.html">✦ Open the assistant</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,9 @@
+# Keep the Docker build context lean + avoid shipping local/dev state.
+node_modules
+.next
+.data
+*.local
+.env.local
+.env*.local
+npm-debug.log*
+.DS_Store
