@@ -1,0 +1,34 @@
+{
+  "name": "vrx-mm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MM (Marketing Materials) — the developer-side authoring app. Assembles buildings/units/texts/media → previews → exports a valid VRX ingest-pack ZIP. Separate workspace from the portal (S230). Slice 1 = the Structured face (textual foundation + units.csv import + validation rail + ZIP export).",
+  "scripts": {
+    "predev": "node scripts/copy-web-ifc-wasm.mjs",
+    "dev": "next dev -p 3021",
+    "prebuild": "node scripts/copy-web-ifc-wasm.mjs",
+    "build": "next build",
+    "start": "next start -p 3021",
+    "lint": "next lint",
+    "test": "npx -y tsx lib/pack.test.ts && npx -y tsx lib/units-csv.test.ts && npx -y tsx lib/export.test.ts && npx -y tsx lib/geo.test.ts && npx -y tsx lib/furniture.test.ts && npx -y tsx lib/matrix.test.ts && npx -y tsx lib/media.test.ts && npx -y tsx lib/preview.test.ts && npx -y tsx lib/ai-build.test.ts && npx -y tsx lib/subdivide.test.ts && npx -y tsx lib/unit-layout.test.ts && npx -y tsx lib/floorplan-apply.test.ts && npx -y tsx lib/ai-build-renderset.test.ts && npx -y tsx lib/floorplan-seeds.test.ts && npx -y tsx lib/floorplan-layout.test.ts && npx -y tsx lib/floorplan-invariant.test.ts && npx -y tsx lib/authoring.test.ts && npx -y tsx lib/board-layout.test.ts && npx -y tsx lib/unit-types.test.ts && npx -y tsx lib/project.test.ts && npx -y tsx lib/project-pack.test.ts && npx -y tsx lib/project-reuse.test.ts && npx -y tsx lib/readiness.test.ts && npx -y tsx lib/ai-build-images.test.ts && npx -y tsx lib/seal.test.ts && npx -y tsx lib/generate-building.test.ts && npx -y tsx lib/ifc-import.test.ts && npx -y tsx lib/ifc-to-project.test.ts"
+  },
+  "dependencies": {
+    "@near-wallet-selector/core": "^10.1.4",
+    "@near-wallet-selector/meteor-wallet": "^10.1.4",
+    "@near-wallet-selector/modal-ui": "^10.1.4",
+    "jszip": "^3.10.1",
+    "leaflet": "^1.9.4",
+    "near-api-js": "^5.0.1",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-leaflet": "^5.0.0",
+    "web-ifc": "^0.0.79"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "typescript": "^5.7.3"
+  }
+}

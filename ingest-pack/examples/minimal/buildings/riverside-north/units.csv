@@ -1,0 +1,3 @@
+id,type,subtype,floor,unitNumber,sqm,priceUsd,priceFreehold,priceCompany,view,corner,baths,note,termsRef
+unit-0801,studio,A,8,801,30,95000,99000,92000,River view,false,1,Efficient studio,
+unit-1204,1br,B,12,1204,46,165000,172000,159000,River view,true,1,Corner unit,standard-3y

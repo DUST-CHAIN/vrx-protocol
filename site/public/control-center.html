@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>VRX — Proof of Flows (how we prove the system works)</title>
+<style>
+  :root{
+    --bg:#05070c; --panel:#0b0f17; --panel2:#0e131d; --border:#1b2432; --border-soft:#141b26;
+    --text:#e8eef7; --dim:#a7b3c4; --faint:#67748a; --vetted:#38d39f; --hold:#e8b84b; --danger:#ff6b6b;
+    --accent:#5b9bff; --alt:#c78ce0; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:
+      radial-gradient(1100px 520px at 50% -4%, rgba(91,155,255,0.07), transparent 60%), var(--bg);
+    color:var(--text); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:28px 14px 80px}
+  @media (max-width:520px){ .wrap{padding:20px 10px 64px} }
+  header.top{margin-bottom:24px}
+  .seal{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;
+    font-weight:600;color:#07140d;background:var(--vetted);letter-spacing:.3px}
+  .kicker{font-size:11.5px;color:var(--faint);letter-spacing:.7px;text-transform:uppercase;margin:12px 0 6px;font-weight:600}
+  h1{font-size:28px;line-height:1.14;margin:4px 0 10px;letter-spacing:-.5px;font-weight:700}
+  @media (max-width:520px){ h1{font-size:23px} }
+  .lede{color:var(--dim);font-size:15.5px;margin:0 0 18px;max-width:64ch}
+  .legend{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 4px}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--dim);
+    background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:5px 11px}
+  .chip b{color:var(--text);font-weight:600}
+  .dot{width:9px;height:9px;border-radius:999px;display:inline-block}
+  .divider{height:1px;background:var(--border-soft);margin:26px 0}
+
+  .callout{border-left:3px solid var(--accent);background:rgba(91,155,255,.05);padding:12px 14px;border-radius:0 10px 10px 0;margin:16px 0}
+  .callout b{color:var(--text)}
+
+  .clip{margin:30px 0;border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
+  .clip-head{padding:16px 16px 4px}
+  .clip-no{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;
+    background:var(--accent);color:#04101f;font-weight:700;font-size:13px;margin-right:9px;vertical-align:middle}
+  .clip-title{font-size:17px;font-weight:650;margin:2px 0 6px;letter-spacing:-.2px;display:inline}
+  .clip-body{padding:0 16px 12px;color:var(--dim);font-size:14.5px}
+  .clip-body strong{color:var(--text)}
+  .vid{background:#000;border-top:1px solid var(--border-soft)}
+  .vid video{display:block;width:100%;height:auto;max-height:70vh;background:#000}
+  .cap{color:var(--faint);font-size:12px;text-align:center;margin:0;padding:10px 14px;background:var(--panel2);border-top:1px solid var(--border-soft)}
+
+  .what{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  @media (max-width:560px){ .what{grid-template-columns:1fr} }
+  .what .card{border:1px solid var(--border);border-radius:12px;padding:13px 14px;background:var(--panel2)}
+  .what .card h4{margin:0 0 5px;font-size:13.5px;letter-spacing:.2px}
+  .what .card p{margin:0;font-size:13px;color:var(--dim)}
+  .role-buyer{color:var(--accent)} .role-dev{color:var(--vetted)} .role-agent{color:var(--alt)} .role-ops{color:var(--hold)}
+
+  footer{margin-top:40px;color:var(--faint);font-size:12.5px;text-align:center;line-height:1.7}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="seal">✓ Vetted</span>
+    <div class="kicker">VRX · How we prove the system works</div>
+    <h1>The VRX Live Control Center.</h1>
+    <p class="lede">Before anyone trusts VRX with a real reservation, we have to know every flow actually works —
+      not just that the tests pass, but that the <b style="color:var(--text)">real app</b> does the right thing when
+      real people use it at the same time. Proof of Flows is how. It runs many users at once — each in their
+      real role — straight through the live product, and shows every action and its result on one screen. The
+      recording below is one real, complete, narrated run: 24 flows end to end, including a live AI negotiation.</p>
+    <div class="legend">
+      <span class="chip"><span class="dot" style="background:var(--accent)"></span> <b>Buyer</b></span>
+      <span class="chip"><span class="dot" style="background:var(--vetted)"></span> <b>Developer</b></span>
+      <span class="chip"><span class="dot" style="background:var(--alt)"></span> <b>Agent</b></span>
+      <span class="chip"><span class="dot" style="background:var(--hold)"></span> <b>Operator</b></span>
+    </div>
+  </header>
+
+  <div class="callout">
+    <b>What you’re looking at.</b> Each card on the left is one live user doing their job through the real VRX app.
+    The log on the right is every action they took and what the system did back — a reservation held, a deposit
+    paid into escrow, an attack refused. It runs against the live chain (the block number ticks up as NEAR moves),
+    and it’s deliberately careful with cost — most of it runs for free.
+  </div>
+
+  <!-- What the runs demonstrate -->
+  <div class="what">
+    <div class="card"><h4 class="role-buyer">A buyer reserves &amp; pays</h4><p>Browse → open a private desk chat →
+      reserve a unit → pay the deposit into escrow → see it in “My purchases”. The real end-to-end journey.</p></div>
+    <div class="card"><h4 class="role-dev">The money is protected</h4><p>The deposit is held in escrow — not the
+      developer’s wallet — and the buyer can pull it back (a full refund) before release. Trust, shown.</p></div>
+    <div class="card"><h4 class="role-ops">Attacks are refused</h4><p>A stranger trying to pay for someone else, or
+      reserve a unit never offered to them, is turned away. The guards hold.</p></div>
+    <div class="card"><h4 class="role-agent">No double-selling</h4><p>Two buyers race for the <i>same</i> unit at
+      the same instant — exactly one wins, the other is cleanly told it’s taken. (This run caught and fixed a real
+      bug.)</p></div>
+    <div class="card"><h4 class="role-buyer">Live AI negotiation</h4><p>A real buyer talks to the real sales desk —
+      no script. It negotiates from its true levers, never invents a term or leaks a commission, and closes the
+      deal on camera.</p></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- The full run -->
+  <div class="clip">
+    <div class="clip-head">
+      <h3 class="clip-title">Proof of Flows — every role, every flow, narrated and live</h3>
+    </div>
+    <div class="clip-body">
+      <p>One complete, narrated run of the whole scenario library — <strong>24 scenarios, start to finish</strong>:
+        a short walkthrough of what VRX is, then a buyer’s full purchase, the developer’s dashboard, an agent’s
+        bookings, the escrow hold and the full refund, the money-safety checks, buyers racing for the same unit
+        (exactly one wins), the security refusals — and a <strong>live AI negotiation</strong> where a real buyer
+        talks to the real sales desk and closes a deal on camera. Every step is narrated and shown on one screen as
+        it happens. <strong>Every scenario passes — 24 / 24.</strong></p>
+    </div>
+    <div class="vid">
+      <video controls preload="metadata" playsinline poster="">
+        <source src="control/VRX-proof-of-flows.mp4" type="video/mp4">
+        Your browser can’t play this video. <a href="control/VRX-proof-of-flows.mp4">Download it</a>.
+      </video>
+    </div>
+    <p class="cap">A full 24 / 24 pass of the VRX scenario suite — narrated, live, including real AI negotiation.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="callout">
+    <b>Why this matters.</b> This is the difference between “the tests are green” and “we watched the real product
+    handle real, simultaneous users — including people trying to break it — and it held.” It’s also how every new
+    scenario becomes a permanent check: once a flow is in the library, it’s run and proven on every pass.
+  </div>
+
+  <footer>
+    VRX — a private, on-chain reservation primitive. · This page is a private preview, not indexed.<br>
+    Questions: <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a>
+  </footer>
+</div>
+</body>
+</html>

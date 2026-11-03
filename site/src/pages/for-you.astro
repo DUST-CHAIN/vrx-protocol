@@ -1,0 +1,105 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Term from "@components/Term.astro";
+import { ROLES } from "@data/roles";
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, ""); // "/vrx" — prefix raw /img/ refs
+---
+<Layout
+  title="For you — how VRX works for your role | Vetted Realty"
+  description="Landowners, developers, agencies, agents and buyers — see what VRX is, how it works for you, how you'll use it, and why you can trust it."
+>
+  <section id="for-you" style="padding-top:40px;">
+    <div class="wrap">
+      <p class="eyebrow">For you</p>
+      <h1 style="font-size:clamp(1.9rem,5vw,2.8rem);">Read it from your own side of the table.</h1>
+      <p class="lead" style="max-width:720px;">
+        Whoever you are in the deal, here's what VRX is, how it works for you, how you'll use it, and
+        why you — and everyone you deal with — can trust it. Tap a role to open it.
+      </p>
+
+      <div class="accordion" style="margin-top:26px;">
+        {ROLES.map((r, i) => (
+          <details class="acc" id={`acc-${r.id}`} open={i === 0}>
+            <summary>
+              <span class="acc-name">{r.name}</span>
+              {r.tag === "coming soon"
+                ? <span class="status-row"><span class="dot soon"></span>Planned</span>
+                : <span class="chip">{r.tag}</span>}
+              <span class="acc-mark" aria-hidden="true"></span>
+            </summary>
+            <div class="acc-body">
+              <p class="lead" style="margin:4px 0 18px;max-width:800px;">{r.tagline}</p>
+              <div class="grid cols-2">
+                <div>
+                  <h3 style="font-size:1rem;color:var(--accent);">What it is</h3>
+                  <p>{r.what}</p>
+                  <h3 style="font-size:1rem;color:var(--accent);">How it works</h3>
+                  <p>{r.how}</p>
+                </div>
+                <div>
+                  <h3 style="font-size:1rem;color:var(--accent);">How you'll use it</h3>
+                  <ul class="ticks">{r.use.map((u) => <li>{u}</li>)}</ul>
+                  <h3 style="font-size:1rem;color:var(--accent);margin-top:18px;">Why you trust it</h3>
+                  <p>{r.trust}</p>
+                </div>
+              </div>
+              <figure style="margin-top:20px;">
+                <img src={`${BASE}/img/${r.image}`} alt={r.imageAlt} width="1200" height="520" loading="lazy" />
+                <figcaption>{r.imageCaption}</figcaption>
+              </figure>
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <p style="margin-top:28px;">
+        <a class="btn btn-primary" href="./#contact">Join the private alpha</a>
+        &nbsp;
+        <a href="./">← Back to the overview</a>
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .accordion { display: flex; flex-direction: column; gap: 12px; }
+  .acc {
+    background: var(--panel); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 12px; overflow: hidden;
+  }
+  .acc summary {
+    list-style: none; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 18px 20px; font-weight: 700; font-size: 1.25rem; color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .acc summary::-webkit-details-marker { display: none; }
+  .acc-name { margin-right: auto; }
+  .acc-mark {
+    width: 12px; height: 12px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim);
+    transform: rotate(45deg); transition: transform 0.2s ease; margin-left: 6px; flex: 0 0 auto;
+  }
+  .acc[open] .acc-mark { transform: rotate(-135deg); }
+  .acc summary:hover { background: var(--panel2); }
+  .acc-body { padding: 0 20px 22px; }
+  /* status chip on the summary line already styled globally (.chip / .status-row) */
+  @media (max-width: 760px) {
+    .acc summary { font-size: 1.1rem; padding: 16px; }
+    .acc-body { padding: 0 16px 18px; }
+  }
+</style>
+
+<script>
+  // Open + scroll to the role targeted by a #hash (e.g. /for-you.html#agencies from the home cards).
+  (() => {
+    function openFromHash() {
+      const id = location.hash.slice(1);
+      if (!id) return;
+      // each role's <details> wraps a summary; give them ids via the role name mapping
+      const target = document.getElementById("acc-" + id);
+      if (target) { target.open = true; target.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    }
+    window.addEventListener("hashchange", openFromHash);
+    openFromHash();
+  })();
+</script>

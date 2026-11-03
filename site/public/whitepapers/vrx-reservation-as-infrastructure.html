@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Reservation as Infrastructure — The VRX Technical Paper</title>
+<meta name="description" content="The VRX technical paper: a privacy-preserving reservation primitive for unique assets on NEAR. Architecture, verified contract method surface, privacy model, NFT comparison, NEAR Intents and Confidential Intents.">
+<style>
+:root{--ink:#17212b;--muted:#5b6874;--line:#dce3e8;--paper:#fff;--wash:#f4f7f8;--accent:#176b67;--accent2:#d9eeeb;--warm:#a55a22;--max:1180px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:2rem}
+body{margin:0;background:var(--wash);color:var(--ink);font:16px/1.72 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px;overflow-wrap:anywhere}
+a:hover{color:#0c4946}
+.shell{max-width:var(--max);margin:auto;padding:28px 26px 80px;display:grid;grid-template-columns:235px minmax(0,1fr);gap:38px}
+nav{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 44px);overflow:auto;padding:18px 16px;background:#fff;border:1px solid var(--line);border-radius:12px}
+nav .brand{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:750;margin:0 0 14px}
+nav a{display:block;color:#42515c;text-decoration:none;font-size:13px;line-height:1.45;padding:6px 0}
+nav a:hover{color:var(--accent)}
+main{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:clamp(24px,5vw,64px);box-shadow:0 12px 40px #17212b08}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:800}
+h1{font-size:clamp(36px,5vw,58px);line-height:1.06;letter-spacing:-.04em;margin:16px 0}
+.deck{font-size:19px;line-height:1.5;color:#45535e;max-width:780px}
+.meta{font-size:13px;color:var(--muted);margin:25px 0 34px}
+h2{font-size:28px;letter-spacing:-.025em;line-height:1.2;margin:54px 0 16px;padding-top:12px}
+h3{font-size:19px;line-height:1.3;margin:30px 0 10px}
+p{margin:12px 0}
+.lead{font-size:18px;color:#34434e}
+.callout{padding:18px 20px;border-left:4px solid var(--accent);background:#eef7f5;border-radius:0 9px 9px 0;margin:24px 0}
+.caution{padding:17px 19px;border-left:4px solid var(--warm);background:#fff6ed;border-radius:0 9px 9px 0;margin:22px 0}
+.small{font-size:13px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+th,td{padding:12px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{background:#f3f6f7;font-weight:750}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em;background:#f0f3f4;padding:2px 5px;border-radius:4px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#17212b;color:#e7f1f3;padding:18px;border-radius:9px;font-size:13px;line-height:1.55;overflow:auto}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}
+.flow div{padding:14px;border:1px solid var(--line);border-radius:9px;background:#fbfcfc;font-size:13px}
+.flow b{display:block;color:var(--accent);margin-bottom:5px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11px;color:#52616b;margin:3px}
+.footnotes{font-size:14px}
+.footnotes li{padding:7px 0;overflow-wrap:anywhere}
+.glossary dt{font-weight:800;margin-top:14px}.glossary dd{margin:2px 0 0 0;color:#4b5963}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0}
+footer{font-size:13px;color:var(--muted);margin-top:45px}
+@media(max-width:900px){.shell{display:block;padding:12px}.shell nav{position:relative;top:auto;max-height:none;margin-bottom:12px}.shell nav .links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}main{padding:26px 22px}.flow{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){body{font-size:15px}.shell{padding:0}.shell nav{border-radius:0;border-left:0;border-right:0;margin:0;padding:12px 18px}.shell nav .links{grid-template-columns:1fr 1fr}main{border-radius:0;border-left:0;border-right:0;padding:24px 18px}h2{font-size:24px;margin-top:42px}.flow{grid-template-columns:1fr}table{display:block;overflow-x:auto;white-space:normal}th,td{min-width:130px;padding:10px}}
+@media print{body{background:#fff}.shell{display:block;padding:0;max-width:none}nav{display:none}main{border:0;box-shadow:none;padding:0}.callout,.caution{break-inside:avoid}a{color:inherit;text-decoration:none}.flow{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav aria-label="Paper contents">
+  <p class="brand">VRX Technical Paper · Nov 2026</p>
+  <div class="links">
+    <a href="#abstract">Abstract</a><a href="#scope">1. Scope &amp; terminology</a>
+    <a href="#problem">2. The reservation problem</a><a href="#model">3. VRX model</a>
+    <a href="#contract">4. Contract method surface</a><a href="#privacy">5. Privacy model</a>
+    <a href="#nft">6. NFT marketplace comparison</a><a href="#intents">7. NEAR Intents &amp; Confidential Intents</a>
+    <a href="#demo">8. The demo</a><a href="#threats">9. Threat model</a>
+    <a href="#roadmap">10. Extensions &amp; roadmap</a><a href="#conclusion">Conclusion</a>
+    <a href="#glossary">Glossary</a><a href="#notes">Footnotes &amp; sources</a>
+  </div>
+</nav>
+<main>
+<header>
+  <div class="kicker">Infrastructure for unique-asset commerce</div>
+  <h1>Reservation<br>as Infrastructure</h1>
+  <p class="deck">The VRX technical paper: a privacy-preserving reservation primitive for unique assets on NEAR — its architecture, verified contract method surface, privacy model, the boundary against NFT ownership and payment rails, and the role of NEAR Intents and Confidential Intents.</p>
+  <p class="meta">VRX · Vetted Realty · Technical paper · 14 November 2026. Grounded in the VRX contract source (<code>DUST-CHAIN/vrx-protocol</code>), the deployed testnet contract, and publicly accessible NEAR standards and documentation.</p>
+  <div class="callout"><strong>Central thesis.</strong> The missing primitive is not another way to represent ownership. It is a shared way to coordinate temporary, exclusive claims over unique inventory across organizations that do not share one database or fully trust one another — while keeping the negotiated deal confidential.</div>
+</header>
+
+<section id="abstract">
+<h2>Abstract</h2>
+<p class="lead">Commercial markets routinely need to reserve something before ownership changes: an apartment, a parcel of land, a vehicle, a painting, a machine, a ticket allocation, a software entitlement or a scarce service slot. The parties need to know that one item has not been promised twice, while keeping the negotiated deal confidential.</p>
+<p>NEAR does not provide a standard, general-purpose commercial reservation interface analogous to its fungible-token or NFT standards. NEP-145 standardizes payment for contract storage; NEP-171 defines a token ownership interface. Neither standard defines the lifecycle of a commercial hold over an off-chain asset. [1][2]</p>
+<p>VRX implements that missing application layer. Its design combines a shared on-chain registry, opaque identifiers and keyed privacy seals, role-based off-chain applications, and time-bounded, delegable booking capacity. The result is a verifiable record of exclusivity without publishing the deal: who holds what, in what state, and in what order — with price, identity, commission and legal terms deliberately kept off-chain.</p>
+<p>This paper is written against the real system. Section 4 lists the contract's actual exported methods, events and state codes as they exist in the deployed source, not descriptive placeholders. Section 5 states VRX's privacy position precisely — what the keyed seals and opaque keys do and do not hide — and distinguishes the two complementary confidentiality layers available on NEAR today: VRX's public-registry-plus-off-chain-record model, and NEAR's Confidential Intents private-shard execution for the financial half. The paper is a technical description and design rationale; it is not a security audit, a legal opinion, or a certification of the deployed bytecode (see the closing note).</p>
+</section>
+
+<section id="scope">
+<h2>1. Scope and terminology</h2>
+<p>The phrase <em>reservation primitive</em> is used here at the application level. It means a minimal, reusable state machine that lets authorized participants claim a particular unit of inventory for a limited period, prevent conflicting claims, and later release, expire or finalize that claim.</p>
+<p>Three layers carry distinct responsibilities, and keeping them separate is the whole discipline of the design:</p>
+<table>
+<thead><tr><th>Layer</th><th>What it does</th><th>What it does not do</th></tr></thead>
+<tbody>
+<tr><td>NEAR protocol</td><td>Orders and finalizes transactions, executes smart contracts, maintains account and contract state, and provides the execution environment.</td><td>It does not understand that apartment 312 is commercially unavailable because an agent is negotiating a purchase.</td></tr>
+<tr><td>The VRX contract</td><td>Enforces the application's authorization rules and state transitions for inventory claims, holds, exclusives and booking tokens.</td><td>It cannot independently establish the legal identity of a property, prove that a seller owns it, or force an off-chain deed transfer.</td></tr>
+<tr><td>VRX applications and operators</td><td>Publish inventory, vet participants, manage confidential documents and terms, collect deposits where configured, and coordinate settlement.</td><td>They are not automatically trustless merely because they write a hash to a blockchain. VRX is a vetted-participant network, not an anonymous one.</td></tr>
+</tbody></table>
+<div class="callout"><strong>The governing privacy rule (and the moat).</strong> Every real-world identifier the contract touches is an opaque hash or keyed seal — a unit key, a request hash, a building hash, a commission anchor, a seal hash. The contract carries accounts, opaque references and status codes; it never carries price, identity, commission, deal terms or documents. That line is not a limitation to be engineered away. It <em>is</em> the product: a shared, verifiable coordination layer that leaks nothing about the deal.</div>
+</section>
+
+<section id="problem">
+<h2>2. The problem: exclusive claims over unique inventory</h2>
+<h3>2.1 Why ordinary listings are insufficient</h3>
+<p>A listing says that an item is offered. It does not necessarily say whether the item is still available, whether another agent has a temporary hold, whether a deposit has been received, or whether the seller has accepted a competing offer.</p>
+<p>In a single company, one central database can serialize these operations. In a multi-party distribution chain, the same inventory appears in a developer's system, several agencies' CRMs, agent spreadsheets and buyer portals. Each copy can be internally consistent while the network as a whole is wrong — the classic double-booking failure, except the "double" is a real apartment a real family thinks they have reserved.</p>
+<p>The core invariant is simple:</p>
+<pre>For each unique inventory unit U:
+At most one active exclusive hold may exist at a time.</pre>
+<p>For a unique asset, identity matters. Unit 312 is not interchangeable with unit 311; the value of the reservation scales with the worth of the specific item. A reservation system must therefore operate on a stable unit identifier, not merely a count of equivalent units.</p>
+<h3>2.2 A reservation is not ownership</h3>
+<p>A reservation creates a temporary priority or exclusivity claim under defined rules. It is not itself a conveyance of title. For real estate, ownership still depends on land records, execution of legal instruments, payment, registration and jurisdiction-specific formalities. The chain can establish that the VRX registry recorded a state transition; it cannot make an invalid deed valid. VRX facilitates and seals; it does not adjudicate or warrant enforceability.</p>
+<h3>2.3 Why a shared ledger helps</h3>
+<p>If participants use one contract as the authoritative state machine, two competing requests are ordered by the chain. The first valid transaction moves a unit from open to held; a later conflicting transaction fails against the updated state. This replaces "which spreadsheet is current?" with a shared, append-only transaction history that mutually distrusting parties can all read and none can secretly rewrite.</p>
+<p>That guarantee is only as strong as the contract's unit-key design, authorization checks, transition logic, upgrade controls and handling of expiry — all of which Section 4 and Section 9 address against the real contract. It also assumes all participants consult the same canonical contract and network.</p>
+</section>
+
+<section id="model">
+<h2>3. The VRX reservation model</h2>
+<p>VRX is four connected components built around one on-chain registry.</p>
+<div class="flow">
+  <div><b>1 · Inventory publisher</b>A developer (a registered <em>node</em>) stamps a unit tile with a status and an integrity hash — the canonical availability commitment.</div>
+  <div><b>2 · Reservation registry</b>The contract records exclusive state transitions against a unique opaque unit key: claims, firm-hold exclusives, and scarce booking tokens.</div>
+  <div><b>3 · Distribution chain</b>Agencies (<em>orgs</em>) and their agents (<em>peers</em>) are gated by the developer and request, view and manage authorized holds within scope.</div>
+  <div><b>4 · Private deal workflow</b>Documents, identities, price, deposit, commission and closing evidence remain in controlled off-chain systems, bound to the chain only by hashes and keyed seals.</div>
+</div>
+<h3>3.1 The real on-chain actors</h3>
+<p>The contract models the distribution chain as a trust graph of registered accounts, and custody and authority flow along its edges:</p>
+<ul>
+<li><strong>Owner</strong> — VRX itself: the sole authority for issuing booking-token capacity, setting the storage toll, pausing the contract and running migrations.</li>
+<li><strong>Node</strong> — a developer / inventory controller. Nodes stamp tiles, grant gates to orgs, grant exclusives, and attest buildings.</li>
+<li><strong>Org</strong> — an agency. An org can only act on a node's inventory where that node has granted it an active <em>gate</em> with a defined scope.</li>
+<li><strong>Peer</strong> — an agent under an org. Agents hold and commit booking tokens on behalf of their agency.</li>
+</ul>
+<p>Every edge is explicit on-chain state: the node→org <code>gate</code> (with a scope) and the org→peer relationship. An action is authorized by walking these edges, never by a caller-supplied claim of authority.</p>
+<h3>3.2 The real state machines</h3>
+<p>VRX does not have one state field; it has several interlocking records, each with its own small, enforced state machine. The status codes below are the actual on-chain encodings.</p>
+<table>
+<thead><tr><th>Record</th><th>States (on-chain codes)</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>Tile</code> (a unit's availability)</td><td>0 open · 1 hold · 2 closed · 3 done</td><td>The developer-stamped availability of a specific unit key. A live hold or exclusive blocks a competing claim; <code>done</code> is a completed unit.</td></tr>
+<tr><td><code>Claim</code> (a booking request)</td><td>0 open · 1 ok · 2 no · 3 alt · 4 confirmed</td><td>An agency's request against a tile and the developer's reply; <code>confirmed</code> (V7) is the mutually agreed state.</td></tr>
+<tr><td><code>Exclusive</code> (a firm hold)</td><td>present / absent, with an <code>until</code> expiry</td><td>A node grants an org the sole right to proceed on a unit for a window. Expiry is enforced lazily and by a permissionless crank (see 3.3).</td></tr>
+<tr><td><code>BookingToken</code> (scarce capacity)</td><td>0 issued · 1 with_agency · 2 with_agent · 3 committed · 4 recycled · 5 frozen</td><td>A delegable reservation-capacity credential that moves developer → agency → agent and is spent (<em>committed</em>) to secure a unit. See 3.4.</td></tr>
+</tbody></table>
+<h3>3.3 Expiry is deterministic, and reclaim is permissionless</h3>
+<p>An expiry timestamp is not, by itself, automatic state mutation — a point the design takes seriously. VRX resolves it two ways, both of which avoid trusting a privileged keeper:</p>
+<ul>
+<li><strong>Lazy release.</strong> A later operation on a unit (for example, a new claim or a new exclusive) first frees any expired hold on that unit in the same transaction. An expired hold never silently blocks a fresh reservation.</li>
+<li><strong>Permissionless crank.</strong> <code>release</code> and <code>release_exclusive_if_expired</code> let <em>anyone</em> clear a lapsed hold. Reclaiming capacity does not depend on an operator's liveness or honesty; it depends only on the clock the chain already agrees on.</li>
+</ul>
+<p>This is a deliberate trust-model choice: expiry behavior is a property of the contract and the block timestamp, not of whoever happens to run the backend.</p>
+<h3>3.4 Booking tokens: delegated, scarce capacity — not ownership</h3>
+<p>A booking token is a scoped authorization credential, closer to a capability than to an NFT. VRX (the owner) is the <strong>sole issuer</strong> and the sole cap authority: a developer can neither mint its own tokens nor raise its own cap. From issuance, a token moves one step at a time along the trust graph — developer → agency → agent — and an arbitrary-account transfer is rejected. An agent <em>commits</em> a token to bind it to a unit and meter its single slot; the developer then grants the on-chain firm-hold (<code>grant_exclusive</code>) for that commitment. The token's whole lifecycle — issue, hand, freeze, commit, release, recycle, re-issue, and upstream clawback — is enforced on-chain, while the money that may change hands around it stays entirely off-chain.</p>
+<p>Two safety properties are worth calling out. <strong>Freeze follows custody:</strong> only the current holder can freeze what they hold, so a freeze is an anti-theft lock, not a griefing tool — and an upstream authority can <em>clawback</em> a token (even a frozen one) from an absconding downstream holder, keeping it live and re-assignable. <strong>Scarcity means live tokens:</strong> recycling a token frees the developer's cap slot, so the cap always reflects genuinely active capacity.</p>
+</section>
+
+<section id="contract">
+<h2>4. Contract method surface (verified)</h2>
+<p>The following are the actual exported methods of the VRX contract (crate <code>DUST-CHAIN/vrx-protocol</code>, near-sdk <code>5.29.1</code>, target <code>wasm32-unknown-unknown</code>). They are grouped by responsibility. A reservation contract's security comes not from having many methods but from a small number of well-defined transitions, each preserving explicit invariants.</p>
+<h3>4.1 Participants, gates and agreements</h3>
+<table>
+<thead><tr><th>Method</th><th>Responsibility &amp; critical checks</th></tr></thead>
+<tbody>
+<tr><td><code>register_node</code> / <code>register_org</code> / <code>register_peer</code> / <code>deactivate_peer</code> / <code>deactivate_node</code> / <code>deactivate_org</code></td><td>Associate an account with a role (developer / agency / agent). Registration is owner- or node-authorized; roles are not self-assignable; deactivation is explicit.</td></tr>
+<tr><td><code>grant_gate</code> / <code>revoke_gate</code> / <code>update_gate_scope</code> / <code>can_access</code> / <code>get_gate</code></td><td>A node grants an org a scoped <code>gate</code> over its inventory. <code>can_access</code> checks a scope hash. No org can act on a node's units without a live gate.</td></tr>
+<tr><td><code>set_agreement</code> / <code>revoke_agreement</code> / <code>get_agreement</code></td><td>Anchor a node→org commission agreement by an opaque <code>commission_hash</code>. The percentages, tiers and splits stay off-chain; only the tamper-evident anchor and a version live on-chain.</td></tr>
+<tr><td><code>attest</code> / <code>ratify_attestation</code> / <code>get_attestation</code></td><td>A node anchors a building-level vetting/sign-off seal (opaque <code>seal_hash</code>), owner-ratifiable. Anchor-only — no slate, term or document ever lands on-chain.</td></tr>
+</tbody></table>
+<h3>4.2 Inventory, claims and exclusives (the reservation core)</h3>
+<table>
+<thead><tr><th>Method</th><th>Responsibility &amp; critical checks</th></tr></thead>
+<tbody>
+<tr><td><code>stamp_tile</code> / <code>stamp_tiles</code> (batch) / <code>get_tile</code></td><td>A node stamps a unit key with a status (0–3) and an integrity hash. Owner-of-the-tile only; a batch cannot clobber another node's tiles.</td></tr>
+<tr><td><code>open_claim</code> / <code>reply_claim</code> / <code>confirm_claim</code> / <code>cleanup_claim</code> / <code>get_claim</code> / <code>get_pending_claims</code></td><td>An org opens a booking request (<code>request_hash</code>, opaque); the node replies (ok / no / alt); <code>confirm_claim</code> reaches the mutually agreed state. A lapsed request can be cleaned up.</td></tr>
+<tr><td><code>grant_exclusive</code> / <code>release_exclusive</code> / <code>release_exclusive_if_expired</code> / <code>get_exclusive</code></td><td>The firm-hold. <strong>Node-signed:</strong> <code>grant_exclusive(unit_key, org_id, window_ns)</code> requires the org to exist with an active gate and the tile to be owned by the caller and open. Only the grantor releases it; expiry is permissionless.</td></tr>
+<tr><td><code>release</code> / <code>get_hold_expiry</code> / <code>set_hold_window</code> / <code>get_hold_window</code> / <code>finalize_tile</code></td><td>Hold-window policy and the permissionless lapsed-hold release. <code>finalize_tile</code> records a completed unit.</td></tr>
+</tbody></table>
+<h3>4.3 Passes and booking tokens (scarce, delegable capacity)</h3>
+<table>
+<thead><tr><th>Method</th><th>Responsibility &amp; critical checks</th></tr></thead>
+<tbody>
+<tr><td><code>mint_passes</code> / <code>burn_pass_hold</code> / <code>rebirth_pass</code> / <code>active_pass_count</code> / <code>list_passes</code> / <code>get_pass</code> / <code>get_pass_link</code></td><td>The pass primitive: minted capacity that is burned into a hold and can be reborn, with an on-chain link to its successor.</td></tr>
+<tr><td><code>set_token_cap</code> / <code>issue_tokens</code> / <code>get_token_cap</code> / <code>get_token_count</code></td><td>Owner-only issuance and per-developer cap. A developer can never mint nor raise its own cap; the count tracks live (non-recycled) tokens for an O(1) cap check.</td></tr>
+<tr><td><code>hand_token</code> / <code>freeze_token</code> / <code>unfreeze_token</code> / <code>commit_token</code> / <code>release_commit</code> / <code>recycle_token</code> / <code>reissue_token</code> / <code>clawback_token</code></td><td>The custody and lifecycle verbs. Custody moves one trust-graph step; freeze follows custody; commit meters one slot; recycle frees the cap slot; clawback lets an upstream authority reclaim from an absconding holder.</td></tr>
+<tr><td><code>grant_exclusive_for_token</code> / <code>get_token</code> / <code>tokens_in_custody</code></td><td><strong>Node-signed</strong> link between a committed token and an on-chain exclusive: the unit and beneficiary are <em>derived</em> from the committed token's state, so a node cannot fabricate a firm-hold with no real spent slot behind it.</td></tr>
+</tbody></table>
+<h3>4.4 Administration, storage and lifecycle</h3>
+<table>
+<thead><tr><th>Method</th><th>Responsibility</th></tr></thead>
+<tbody>
+<tr><td><code>set_paused</code> / <code>is_paused</code></td><td>Owner-gated emergency stop. When paused, all state-mutating methods — including the permissionless expiry cranks — halt with a defined error; views stay live; only <code>set_paused</code> and the migration path remain callable. Views are never blocked.</td></tr>
+<tr><td><code>contract_version</code></td><td>Returns the compiled-in version (currently <code>7</code>). The deployed wasm <em>is</em> the version — there is no mutable version field to drift.</td></tr>
+<tr><td><code>set_toll</code> / <code>get_toll</code> / <code>set_treasury</code> / <code>get_treasury</code> / <code>add_exempt</code> / <code>remove_exempt</code> / <code>is_exempt</code> / <code>required_deposit</code></td><td>Storage-cost policy (NEP-145-style storage funding), treasury and exemptions. <code>required_deposit</code> quotes the storage a call will need.</td></tr>
+<tr><td><code>new</code> / <code>migrate</code> … <code>migrate7</code></td><td>Initialization and the additive, old-state-tolerant migration chain (V0 → V7). Migrations are owner/init-gated; each new version is borsh-additive so old readers still work.</td></tr>
+</tbody></table>
+<div class="caution"><strong>Storage standard, stated precisely.</strong> NEP-145 is a storage-management standard — <code>storage_deposit</code>, <code>storage_balance_of</code>, <code>storage_balance_bounds</code>, <code>storage_withdraw</code>, <code>storage_unregister</code> — about funding persistent contract state, not reserving commercial inventory. VRX funds its own storage through a toll / <code>required_deposit</code> model in the same spirit; it does not repurpose NEP-145 as a reservation protocol, and nothing here should be read as a claim that storage management is the reservation mechanism. [1]</div>
+<h3>4.5 The most important atomic operation</h3>
+<p>The critical method is the one that creates a hold. The availability check and the state update occur in one contract execution — the backend must never perform "read available" then "write held" as two independent off-chain steps and treat that as safe. In VRX this is the node-signed <code>grant_exclusive</code> and the agent/node token-commit path, each of which asserts the current on-chain state before mutating it, inside a single transaction.</p>
+<pre>grant_exclusive(unit_key, org_id, window_ns):
+    assert !paused
+    assert caller is a registered node
+    assert org exists AND gate{caller:org} is active
+    release_if_expired(unit_key)        # free a lapsed hold in the same tx
+    assert tile(unit_key) exists AND tile.node == caller AND tile is open
+    exclusives[unit_key] = Exclusive{ by: caller, org, until: now + window_ns }
+    emit ExclusiveGranted{ node, key, org }</pre>
+<h3>4.6 Events and auditability (the real envelope)</h3>
+<p>VRX emits machine-readable, versioned events under a single standard — the on-chain envelope is literally:</p>
+<pre>{"standard":"vrx","version":"1.0.0","event":"...","data":{...}}</pre>
+<p>Events communicate state transitions without exposing deal terms: they carry accounts, opaque keys and status codes only. Representative events include <code>TileStamped</code>, <code>ClaimOpened</code> / <code>ClaimReplied</code>, <code>ExclusiveGranted</code> / <code>ExclusiveReleased</code>, <code>AgreementSet</code>, <code>AttestationSet</code> / <code>AttestationRatified</code>, <code>PausedSet</code>, and the full booking-token set (<code>TokensIssued</code>, <code>TokenHanded</code>, <code>TokenFrozen</code> / <code>TokenUnfrozen</code>, <code>TokenCommitted</code> / <code>TokenReleased</code>, <code>TokenRecycled</code> / <code>TokenReissued</code>, <code>ExclusiveLinkedToToken</code>, <code>TokenClawedBack</code>). Event indexing drives user interfaces, but the contract state remains authoritative: an indexer outage changes no reservation truth.</p>
+<h3>4.7 Idempotency, replay and race conditions</h3>
+<p>Mutating requests are keyed by explicit identifiers — a <code>request_id</code> for claims, a <code>unit_key</code> for tiles and exclusives, a <code>token_id</code> for tokens — so a retried request resolves against existing state rather than creating a duplicate. Because the availability assertion and the write happen in one execution, two agents racing for the same unit in the same block window are serialized by the chain: one wins, the other fails against the updated state. Tested scenarios include concurrent reservation of one unit, an expired hold being superseded, a release racing a settlement, capability (gate) revocation mid-workflow, and clawback over a frozen token.</p>
+</section>
+
+<section id="privacy">
+<h2>5. Privacy model: what the seals hide, and the two confidentiality layers</h2>
+<p>VRX's privacy claim is precise, and stating it precisely is what makes it credible: the chain publishes evidence that a particular <em>opaque</em> inventory reference is held, in what order, and in what state — while the commercial record (identity, price, commission, legal documents, negotiation history) stays off-chain. This is selective disclosure of a coordination fact, not anonymity.</p>
+<h3>5.1 The data partition VRX enforces</h3>
+<table>
+<thead><tr><th>Data</th><th>Location in VRX</th><th>Reason</th></tr></thead>
+<tbody>
+<tr><td>State, sequence, expiry, opaque unit/request/building references</td><td>On the public chain, as opaque keys and status codes</td><td>Shared coordination and independent verification across mutually distrusting parties.</td></tr>
+<tr><td>Buyer / seller identity, KYC, contact details</td><td>Controlled off-chain identity store (never on-chain)</td><td>Personal data and regulatory restrictions.</td></tr>
+<tr><td>Price, commission, negotiated terms, offer documents</td><td>Off-chain store, shared only with authorized parties; bound to chain by a hash anchor</td><td>Commercial confidentiality — the deal is the thing worth protecting.</td></tr>
+<tr><td>Evidence that an off-chain record has not changed</td><td>A keyed seal / integrity hash on-chain (e.g. <code>commission_hash</code>, <code>seal_hash</code>, tile <code>integrity_hash</code>)</td><td>Tamper evidence without publishing the record itself.</td></tr>
+<tr><td>Keys and HMAC secrets</td><td>Operator-controlled key management, scoped by role</td><td>Compromise of a shared key would weaken the commitment model, so keys are not shared broadly.</td></tr>
+</tbody></table>
+<h3>5.2 Hashes, salts and keyed seals — stated honestly</h3>
+<p>A cryptographic hash commits to data but does not encrypt it. If a value is drawn from a small domain (a short list of apartment numbers, say), an attacker can hash every candidate and compare — a dictionary attack. VRX therefore does not commit bare, low-entropy values: real-world references are bound with a secret salt / keyed construction, so a commitment is not guessable from the public output alone. HMAC-SHA-256 and salted hashing are well-established and are not "broken"; the honest engineering question is not the primitive but the <em>key management</em> around it.</p>
+<p>VRX addresses that with per-record salts and versioned anchors: a seal binds one record, a re-attestation bumps a version and replaces the anchor, and an auditor can verify a specific historical commitment by being given that one record and its salt — not broad access to every private file. This keeps the HMAC layer doing what it is genuinely good at: letting an authorized party independently verify that a specific off-chain record matches its on-chain seal.</p>
+<h3>5.3 Metadata is the real residual exposure — and we name it</h3>
+<p>Even with content hidden, a public ledger reveals <em>metadata</em>: which account interacts with the contract, when a unit is held, how often a hold is extended, how many units are active, whether two records move together. A persistent opaque unit key can become a stable pseudonymous identifier over time. This is not a defect in any hash — it is an inherent property of writing anything to a public chain, and any honest reservation design must account for linkability, timing, account clustering, event frequency, RPC-provider visibility, backups and operator access, not merely the bytes on-chain.</p>
+<p>VRX's answer today is structural: the public layer is deliberately thin (opaque keys + status codes), identities are off-chain, and the mechanism that maps a key to a real unit is not published. That bounds what metadata can reveal. It does not make a determined long-horizon observer blind to patterns — and the paper says so plainly rather than overselling.</p>
+<h3>5.4 Two complementary confidentiality layers on NEAR</h3>
+<p>There are two distinct confidentiality mechanisms available, and VRX treats them as complementary — one shipped, one on the roadmap.</p>
+<table>
+<thead><tr><th></th><th>Architecture A — VRX today</th><th>Architecture B — with confidential execution</th></tr></thead>
+<tbody>
+<tr><td>Status</td><td><strong>Shipped.</strong> The deployed design.</td><td><strong>Roadmap.</strong> A funded-future extension for the financial/matching half.</td></tr>
+<tr><td>Reservation state</td><td>Public, as opaque keys + status codes</td><td>Public verification at carefully chosen boundaries; sensitive legs confidential</td></tr>
+<tr><td>Commercial record</td><td>Off-chain, hash-anchored, keyed seals</td><td>Same off-chain protection, unchanged</td></tr>
+<tr><td>Payment / settlement</td><td>Off-chain; the chain carries no money detail</td><td>Potentially routed through NEAR <strong>Confidential Intents</strong> — private-shard execution that restricts transaction visibility (size, timing, counterparties) [4][5]</td></tr>
+<tr><td>Transaction metadata</td><td>Visible on the public chain for the thin on-chain legs</td><td>Restricted for supported confidential legs; selective disclosure for authorized auditing</td></tr>
+</tbody></table>
+<div class="callout"><strong>VRX's position on Confidential Intents.</strong> NEAR Confidential Intents (generally available since 7 July 2026) executes supported transactions on a private shard, hiding order size, timing and counterparties, with selective disclosure for controlled auditing. [4][5] This is a genuine advance for the <em>money and matching half</em> of VRX — exactly the layer VRX always intended to harden with confidential compute. It does <em>not</em> replace the keyed-seal layer: HMAC-style commitments remain how a counterparty independently verifies an off-chain record, which a private execution environment does not provide. And NEAR's own terms are explicit that Confidential Mode does not guarantee anonymity against every party. [5] So the two layers stack: VRX's public-registry-plus-sealed-records for coordination and verifiability, confidential execution for the financial flow. An open architectural question we scope deliberately (Section 10) is whether the reservation contract itself could run confidential legs, versus using confidential execution only for payment.</div>
+<h3>5.5 Threat-model boundaries</h3>
+<ul>
+<li><strong>Public observers:</strong> learn only what the thin public state and metadata reveal — never identity, price or terms.</li>
+<li><strong>Participating operators:</strong> see only the data their role needs; access is scoped and logged.</li>
+<li><strong>A compromised agency or agent:</strong> should not automatically expose every client's deal or all of a developer's inventory — scope and per-record keys bound the blast radius.</li>
+<li><strong>A malicious publisher:</strong> can still publish false inventory; vetting and accountability, not cryptography, are the control (Section 9).</li>
+<li><strong>A compromised key:</strong> may enable forgery or disclosure depending on whether the key authenticates, seals or encrypts — hence role-scoped keys and versioning.</li>
+<li><strong>Legal process:</strong> off-chain custodians may be lawfully compelled to disclose. VRX is a confidentiality design, not a claim of immunity from lawful disclosure.</li>
+</ul>
+</section>
+
+<section id="nft">
+<h2>6. Reservation registry versus NFT marketplace</h2>
+<p>NEP-171 defines a standard interface for non-fungible tokens — unique token IDs, owners and transfer methods, with extensions for metadata and approval-based marketplaces. [2] These standards represent and transfer tokenized assets. They do not, by themselves, solve a confidential multi-party booking workflow for an asset whose legal ownership lives in an external registry. VRX and an NFT marketplace solve different problems and can interoperate; they are not substitutes.</p>
+<table>
+<thead><tr><th>Dimension</th><th>NFT marketplace</th><th>VRX reservation primitive</th></tr></thead>
+<tbody>
+<tr><td>Primary object</td><td>Tokenized asset or entitlement</td><td>Temporary exclusive claim on a unique inventory unit</td></tr>
+<tr><td>Core question</td><td>Who owns or may transfer this token?</td><td>Who currently has the exclusive right to proceed with this unit?</td></tr>
+<tr><td>Lifecycle</td><td>Mint, list, approve, transfer, burn</td><td>Stamp, claim, hold/exclusive, renew, release, expire, confirm</td></tr>
+<tr><td>Visibility</td><td>Ownership and transfers are generally public</td><td>Exposes only opaque state and commitments; identity and terms stay off-chain</td></tr>
+<tr><td>Intermediaries</td><td>Marketplace matches buyer and seller via approvals</td><td>Developer, agencies and agents coordinate inventory and deal progress across a vetted trust graph</td></tr>
+<tr><td>Off-chain completion</td><td>Often unnecessary for a purely digital NFT</td><td>Essential: deed, keys, delivery, registration, inspection or access</td></tr>
+<tr><td>Double-sale control</td><td>One token cannot have two owners at once</td><td>One real-world unit must not have two concurrent active holds across channels</td></tr>
+</tbody></table>
+<h3>6.1 Why VRX does not make the reservation an NFT</h3>
+<p>A reservation could be represented by a transferable token, but that would import exactly the properties VRX wants to avoid: unwanted transferability and public metadata. A transferable NFT reservation might be sold, pledged or moved to a wallet the publisher never approved. VRX's requirement is "this named agent may hold this unit for this buyer until this deadline" — a scoped, revocable, non-transferable capability (the booking token and exclusive) expresses that directly, while the keyed seal binds the private terms. Where a genuinely transferable, legally meaningful entitlement is needed, an NFT can sit <em>alongside</em> VRX, with the reservation registry governing the temporary hold before any entitlement is minted or transferred.</p>
+<h3>6.2 The category difference</h3>
+<p>An NFT marketplace is an ownership and exchange layer. VRX is a coordination and exclusivity layer. That is the whole point: the market already has ways to represent ownership and to move money; what it lacks is a shared, private way to agree who is allowed to proceed, over which specific unit, right now.</p>
+</section>
+
+<section id="intents">
+<h2>7. NEAR Intents and Confidential Intents</h2>
+<p>NEAR Intents is an outcome-oriented settlement system: a user signs a desired outcome, solvers compete to fulfil it, and a verifier contract checks the signed instructions and applies supported balance changes. Its interface covers <code>execute_intents</code>, signed payloads, deadlines, nonces and token-difference operations. [6][7] Intents is relevant to the <em>financial</em> side of a reservation — it can move supported assets — but it does not replace the inventory state machine. Intents moves money; VRX decides whether a particular unit may be held or confirmed.</p>
+<h3>7.1 A clean division of responsibility</h3>
+<div class="flow">
+  <div><b>VRX registry</b>Checks the unit, role, gate, hold deadline and current state — the exclusivity authority.</div>
+  <div><b>Buyer intent</b>Expresses the deposit/payment outcome and its acceptable conditions.</div>
+  <div><b>Solver / relayer</b>Finds a valid execution path and submits signed instructions.</div>
+  <div><b>Settlement adapter</b>Verifies the payment result and advances the VRX workflow under explicit, narrow rules.</div>
+</div>
+<h3>7.2 Example: a conditional reservation deposit</h3>
+<p>A buyer requests a 48-hour hold and agrees to place a refundable deposit in a supported stablecoin. A plausible future flow:</p>
+<ol>
+<li>VRX verifies the unit is available and records a short-lived pending hold.</li>
+<li>The buyer signs a payment intent — amount, recipient, deadline, refund/escrow conditions.</li>
+<li>A solver submits the signed intent to the Intents verifier.</li>
+<li>Payment settles into a designated escrow/settlement account.</li>
+<li>A narrow adapter verifies the final payment state and calls VRX to confirm the hold.</li>
+<li>If the deadline passes or settlement fails, the pending hold expires or is released.</li>
+</ol>
+<p>This sequence is not atomic across two independent contracts. NEAR cross-contract calls complete asynchronously; a successful batch inside the Intents verifier does not guarantee every external call completes in order. [3][6] The VRX integration therefore uses callbacks, state reconciliation and compensating actions — never the assumption of one global atomic transaction. This is the same discipline VRX already applies internally: a scheduled promise is not proof the downstream action succeeded.</p>
+<h3>7.3 What Intents adds — and what it does not</h3>
+<table>
+<thead><tr><th>Intents can add</th><th>Intents does not add</th></tr></thead>
+<tbody>
+<tr><td>Supported-asset (e.g. stablecoin) deposits without the buyer managing chain-specific execution detail.</td><td>Validation of property title, seller authority, or the truth of inventory data.</td></tr>
+<tr><td>Solver competition for conversion, routing and settlement when payment and payout assets differ.</td><td>A legally enforceable escrow agreement by itself.</td></tr>
+<tr><td>Agent-initiated payment workflows with signed constraints, deadlines and nonce protection.</td><td>A guarantee that an off-chain deed, handover or delivery occurs.</td></tr>
+<tr><td>Optional routing through <strong>Confidential Intents</strong> so transaction details (size, timing, counterparty) are restricted for supported financial legs. [4][5]</td><td>Privacy for VRX's reservation metadata merely because a payment used a confidential route — the reservation layer's confidentiality is a separate, deliberate design (Section 5).</td></tr>
+</tbody></table>
+<h3>7.4 The recommended integration pattern</h3>
+<p>Keep inventory authority in VRX and payment authority in the Intents verifier / escrow. Between them, a <em>narrow settlement adapter</em> that accepts only a verifiable settlement reference, the expected amount and asset, the recipient, and a reservation-identifier commitment. The adapter is idempotent, rejects stale or replayed proofs, and is structurally unable to create or settle arbitrary inventory holds. For high-value deals, add explicit payment states (<code>PendingPayment</code>, <code>DepositConfirmed</code>, <code>Closing</code>, <code>Disputed</code>) without blurring the meaning of a reservation's core states.</p>
+</section>
+
+<section id="demo">
+<h2>8. The VRX demo — what it is, honestly</h2>
+<p>VRX runs a browser-accessible sandbox at <a href="http://vrx.poolo.org/" target="_blank" rel="noopener">vrx.poolo.org</a> that lets a visitor choose a role and walk the full workflow without configuring a wallet. We describe its execution mode plainly, because an honest account of the demo is worth more than an impressive-sounding one.</p>
+<div class="caution"><strong>Demo execution mode (stated by the team).</strong> The hosted sandbox is an <strong>application simulation of the full product</strong> — a wallet-free, role-switching environment that exercises VRX's real off-chain logic (inventory, roles, gates, holds, booking tokens, the AI sales desk, deposits) so a visitor can experience the end-to-end flow. It is run in an operator ("god-mode") mode for demonstration, not a wallet-signed public deployment. Separately, the VRX smart contract is deployed on NEAR <strong>testnet</strong> (account <code>calculating-hand.testnet</code>, contract version 7). The V7 batch — which adds the booking-token on-chain rail, the emergency-stop and the attestation seal — is live on testnet, reached through the single gated migrate-and-redeploy step it was designed to ride. So: the <em>demo</em> shows the product; the <em>contract</em> is live on testnet at V7; full on-chain signing of every demo action is the next integration milestone, not a current claim.</div>
+<h3>8.1 A suggested walkthrough</h3>
+<ol>
+<li><strong>Start as the developer.</strong> See how a unit is published, how availability is represented, and what authority is required to stamp it.</li>
+<li><strong>Switch to an agency.</strong> Inspect the inventory the agency can see and whether it holds a scoped allocation or only view/request permission.</li>
+<li><strong>Switch to an agent.</strong> Select one specific unit — note that you reserve the <em>exact</em> unit (312, not "a 2-bed"), not a generic quantity.</li>
+<li><strong>Create a hold.</strong> Record the status, hold duration, reservation reference and any booking-token consumption.</li>
+<li><strong>Attempt a conflicting hold</strong> from another role/session. The essential demonstration is that the second request is refused on shared state, not merely hidden in the UI.</li>
+<li><strong>Release or expire the hold.</strong> Observe whether the unit returns to availability immediately, on action, or via an expiry operation.</li>
+<li><strong>Walk a settlement path</strong> and note what changes the status, and whether that step is a simulation, an attestation, or an on-chain transaction.</li>
+</ol>
+<h3>8.2 What a rigorous reviewer should check</h3>
+<table>
+<thead><tr><th>Test</th><th>What a strong result looks like</th></tr></thead>
+<tbody>
+<tr><td>Two simultaneous requests for one unit</td><td>Only one becomes active; the loser gets a clear conflict result.</td></tr>
+<tr><td>Refresh / reopen the browser</td><td>State is reconstructed from a shared authoritative source, not only local browser memory.</td></tr>
+<tr><td>Different roles</td><td>Actions are constrained by server/contract authorization, not merely by hiding buttons.</td></tr>
+<tr><td>Expired hold</td><td>Expiry is deterministic; it does not depend on a privileged user silently editing a database.</td></tr>
+<tr><td>Testnet contract read</td><td>The V7 contract on <code>calculating-hand.testnet</code> is live and can be read directly to verify the on-chain surface and state (version, ownership, pause state, tiles and exclusives) described in Section 4, against the public source at <code>DUST-CHAIN/vrx-protocol</code>.</td></tr>
+</tbody></table>
+</section>
+
+<section id="threats">
+<h2>9. Threat model and trust assumptions</h2>
+<p>"Trustless" is the wrong word for a system that depends on vetted identities, off-chain documents, key custody and real-world settlement. VRX is accurately described as a <em>vetted-participant network with cryptographically enforced shared state</em>. That is a feature: in commercial property, the parties are not anonymous and should not be — accountability is part of the value. What the chain enforces is that, among those vetted parties, the shared state cannot be quietly forged or double-spent.</p>
+<table>
+<thead><tr><th>Risk</th><th>Potential impact</th><th>VRX control</th></tr></thead>
+<tbody>
+<tr><td>False inventory publication</td><td>Participants reserve an asset the publisher cannot sell.</td><td>Vetting + node accountability; the attestation/ratification seal; audit trail; dispute process off-chain.</td></tr>
+<tr><td>Compromised publisher (node) key</td><td>Unauthorized inventory changes or hold grants.</td><td>Role separation; owner-ratified attestations; the owner emergency-stop; key rotation policy.</td></tr>
+<tr><td>Stolen booking capability</td><td>Unauthorized holds or delegation.</td><td>Scoped, one-step custody along the trust graph; freeze; upstream clawback; per-token metering.</td></tr>
+<tr><td>HMAC / seal key compromise</td><td>Forged commitments or cross-record linkability, depending on key use.</td><td>Per-record salts; versioned anchors; role-scoped keys; re-attestation that clears prior ratification.</td></tr>
+<tr><td>Expired hold not reclaimed</td><td>Inventory stuck unavailable.</td><td>Deterministic expiry; lazy release in the next op; <strong>permissionless</strong> crank (no keeper dependence).</td></tr>
+<tr><td>Upgrade / admin compromise</td><td>Contract logic or authority changed.</td><td>Additive, old-state-tolerant migrations; owner-gated upgrade; the pause stops mutations while fixing.</td></tr>
+<tr><td>Indexer or RPC outage</td><td>UI shows stale status.</td><td>Contract state is authoritative; views are never paused; read-after-write / finality checks in the apps.</td></tr>
+<tr><td>Off-chain document loss</td><td>Commitment remains but the underlying evidence disappears.</td><td>Encrypted redundancy, retention and recovery policy at the off-chain custodian.</td></tr>
+</tbody></table>
+<h3>9.1 Security review is a point in time — and we treat it that way</h3>
+<p>VRX maintains a standing, submittable security and privacy posture document that rolls up its point-in-time audits, and it is updated in the same pass as any change to a masking, consent or sealing pattern. An integrator or investor should still ask for the concrete artifacts that make a review meaningful — the audit scope and commit hash, the compiler and dependency versions, the remediation status of any findings, and confirmation that the deployed bytecode corresponds to the reviewed source. These are the questions due diligence asks of any protocol, and VRX keeps them answerable. A review of one version does not certify later changes — which is precisely why VRX pins its posture to the living source rather than to a one-off report.</p>
+<h3>9.2 Invariants VRX formalizes</h3>
+<ul>
+<li>At most one active hold/exclusive per unique inventory key.</li>
+<li>A completed (<code>done</code>) unit cannot be returned to availability by an ordinary release or expiry.</li>
+<li>Only authorized roles — gated along the trust graph — can stamp, claim, hold, release or confirm.</li>
+<li>A booking token cannot be spent twice or moved outside its one-step custody path; freeze follows custody.</li>
+<li>Expired holds cannot block new reservations after the defined expiry rule, and anyone can crank the reclaim.</li>
+<li>Every state transition emits a versioned, auditable <code>vrx</code> event carrying no private data.</li>
+<li>Price, identity, commission, terms and documents are never emitted in events, errors or public views.</li>
+<li>The owner emergency-stop can freeze all mutation without losing state; views stay live.</li>
+</ul>
+</section>
+
+<section id="roadmap">
+<h2>10. Extensions and a possible standards path</h2>
+<h3>10.1 A minimal reusable interface</h3>
+<p>VRX's storage layer is already domain-agnostic: every real-world reference is an opaque hash, so the contract does not "know" it is real estate. That makes the most valuable external contribution a compact <em>reservation interface</em> — unit identity, authority, state transitions, expiry, idempotency, commitments and event semantics — that other verticals (vehicles, equipment, livestock, event slots, licensing) can implement without inheriting one UI or one industry's metadata. The invariants are the standard; the domain evidence stays off-chain or in optional modules.</p>
+<h3>10.2 Confidential execution for the money/matching half (Architecture B)</h3>
+<p>The clearest privacy upgrade is the one Section 5.4 names: route the financial and matching legs through NEAR Confidential Intents so that even transaction metadata (size, timing, counterparty) is restricted, while VRX keeps the public coordination layer and the keyed seals for verifiability. The open architectural question we scope deliberately — rather than assume — is whether parts of the reservation contract itself could execute as confidential legs, versus using confidential execution only for payment. That is a design decision to make once the Intents settlement adapter exists on top of the now-deployed V7 reservation state machine; building it before that foundation is exercised would be premature. [4][5]</p>
+<h3>10.3 Multi-operator governance and federation</h3>
+<p>Further extensions include independent inventory attestations (the attestation seal is the first step), dispute arbitration, multisig publisher control, and cross-registry federation. Federation matters: two registries cannot prevent double booking unless they share a canonical unit namespace or a locking-and-reconciliation protocol — so a shared unit-key convention is the real prerequisite, not more features.</p>
+<h3>10.4 AI agents as constrained participants</h3>
+<p>VRX already runs an AI sales desk that queries real inventory, holds units and takes deposits under explicit gates. The governing principle generalizes: an AI agent operates through a <em>scoped, revocable capability</em>, never an unrestricted account key — "may request a hold on these units, up to this duration, for this buyer, but may not confirm, settle or delegate." Human approval stays required for price acceptance, legal commitments and irreversible settlement. The autonomous on-chain signing path is deliberately gated behind one-time human authorization, so the agent obtains exactly one signature for exactly one scoped action.</p>
+<h3>10.5 Confidential compute and attestations</h3>
+<p>Trusted execution environments (TEEs) can provide protected execution and, in some architectures, attestations about the code inside them. They do not remove the need to reason about the hardware vendor, firmware, attestation service, side channels and key-release policy. NEAR has published work on running Chain Signatures inside TEEs — relevant ecosystem context for where VRX's confidential-compute roadmap could land, not a claim that VRX uses TEEs today. [8]</p>
+<h3>10.6 Development sequence</h3>
+<ol>
+<li>Keep the contract interface and state machine precisely specified and source-public (done; <code>vrx-protocol</code>).</li>
+<li>Complete the V7 batch and run the single gated testnet migrate/redeploy (done; live on <code>calculating-hand.testnet</code>).</li>
+<li>Publish the threat-model and privacy data-flow as living documents (the standing security posture) alongside each change.</li>
+<li>Design the narrow Intents settlement adapter only once the reservation state machine is stable.</li>
+<li>Evaluate confidential execution for the financial legs (Architecture B) against the stabilized foundation.</li>
+<li>Consider a NEAR Enhancement Proposal or ecosystem standard only after multiple independent implementations validate the interface.</li>
+</ol>
+</section>
+
+<section id="conclusion">
+<h2>Conclusion</h2>
+<p>VRX occupies a real gap that sits between listing software, ownership tokens and payment rails. Its contribution is the clean separation of three things the market usually tangles together: <strong>exclusive reservation state</strong>, <strong>public ownership</strong>, and <strong>private commercial terms</strong>.</p>
+<p>Stated precisely — which is how it is strongest — a shared application-level registry makes conflicting claims over unique inventory detectable and enforceable under contract rules, without publishing the deal. It does not, by itself, prove the truth of the underlying asset data, guarantee off-chain performance, or make every part of a transaction private, and this paper has said where each of those boundaries lies.</p>
+<p>NFT standards solve token identity and transfer. NEAR Intents expresses and settles payment outcomes. Confidential Intents adds a private execution environment for the financial flow. VRX coordinates the unit-level exclusivity that none of those systems is designed to own — privately, verifiably, and across organizations that do not trust one another. The contract, its methods, its events and its invariants are public and testable at <code>DUST-CHAIN/vrx-protocol</code> and on <code>calculating-hand.testnet</code>, so VRX can be evaluated as a candidate infrastructure pattern, not merely a real-estate application.</p>
+</section>
+
+<section id="glossary">
+<h2>Glossary</h2>
+<dl class="glossary">
+<dt>Application-level primitive</dt><dd>A reusable abstraction implemented by an application or smart contract, rather than a native protocol feature.</dd>
+<dt>Attestation</dt><dd>In VRX, a node-anchored, owner-ratifiable seal of a building-level vetting/sign-off — an opaque hash, never the underlying document.</dd>
+<dt>Booking token</dt><dd>A scarce, scoped, delegable reservation-capacity credential issued solely by VRX and moved one step at a time along the developer → agency → agent trust graph.</dd>
+<dt>Capability</dt><dd>A credential granting a defined set of permissions over a specified scope and time period; what a booking token and an exclusive are, as opposed to ownership.</dd>
+<dt>Commitment / seal</dt><dd>A cryptographic value (here, a salted/keyed hash) that binds a party to off-chain data without revealing it, enabling tamper-evidence and independent verification.</dd>
+<dt>Confidential Intents</dt><dd>NEAR's private-shard execution for supported transactions, restricting visibility of size, timing and counterparties, with selective disclosure.</dd>
+<dt>Exclusive</dt><dd>In VRX, a node-granted firm hold giving one org the sole right to proceed on a unit for a window; expiry is enforced lazily and by a permissionless crank.</dd>
+<dt>Gate</dt><dd>The on-chain, scoped authorization a node grants an org to act on its inventory. No gate, no access.</dd>
+<dt>HMAC</dt><dd>Hash-based Message Authentication Code: a keyed construction used to authenticate data and resist offline guessing of committed values.</dd>
+<dt>Idempotency</dt><dd>Repeating the same keyed operation produces no additional effect after the first success.</dd>
+<dt>Node / Org / Peer</dt><dd>VRX's on-chain roles: a developer (node), an agency (org), and an agent under an agency (peer).</dd>
+<dt>NEP-145 / NEP-171</dt><dd>NEAR's storage-management standard and its core non-fungible-token interface, respectively.</dd>
+<dt>Opaque identifier</dt><dd>A reference designed not to reveal the underlying real-world object or record directly.</dd>
+<dt>Tile</dt><dd>In VRX, a unit's on-chain availability record (status + integrity hash), stamped by its owning node.</dd>
+<dt>TEE</dt><dd>Trusted Execution Environment: hardware-supported isolation for code and data, typically with an attestation mechanism.</dd>
+</dl>
+</section>
+
+<section id="notes">
+<h2>Footnotes and sources</h2>
+<ol class="footnotes">
+<li><strong>NEP-145 — Storage Management.</strong> Official NEAR Enhancement Proposal; a standard interface for storage balances and deposits, not a commercial reservation protocol. <a href="https://github.com/near/NEPs/blob/master/neps/nep-0145.md" target="_blank" rel="noopener">Read NEP-145</a>.</li>
+<li><strong>NEP-171 — Non-Fungible Token Standard.</strong> Unique token identifiers, ownership and transfer methods. <a href="https://github.com/near/NEPs/blob/master/neps/nep-0171.md" target="_blank" rel="noopener">Read NEP-171</a>; standards index at <a href="https://near.github.io/NEPs/" target="_blank" rel="noopener">NEP specifications</a>.</li>
+<li><strong>NEAR SDK Promise documentation.</strong> Asynchronous cross-contract calls and promises. <a href="https://docs.rs/near-sdk/latest/near_sdk/struct.Promise.html" target="_blank" rel="noopener">Read Promise docs</a>.</li>
+<li><strong>How Confidential Intents Works.</strong> NEAR's technical description of the private-shard architecture, restricted visibility, validators and bridge. <a href="https://www.near.org/blog/how-confidential-intents-works" target="_blank" rel="noopener">Read the architecture article</a>.</li>
+<li><strong>Confidential Intents — general availability (7 July 2026).</strong> NEAR announcement of developer availability; also the source for NEAR's own caution that Confidential Mode does not guarantee anonymity against every party. <a href="https://www.near.org/blog/announcing-general-availability-of-confidential-intents" target="_blank" rel="noopener">Read the announcement</a>.</li>
+<li><strong>NEAR Intents — Intent Types and Execution.</strong> <code>execute_intents</code>, signed payloads, deadlines, nonces, token-difference operations. <a href="https://docs.agentsonintents.com/integration/verifier-contract/intent-types-and-execution" target="_blank" rel="noopener">Read execution docs</a>.</li>
+<li><strong>NEAR Intents — Verifier Contract and Signing.</strong> The on-chain settlement layer and signature formats. <a href="https://docs.agentsonintents.com/integration/verifier-contract/introduction" target="_blank" rel="noopener">Verifier overview</a>; <a href="https://docs.agentsonintents.com/integration/verifier-contract/signing-intents" target="_blank" rel="noopener">Signing guide</a>.</li>
+<li><strong>Chain Signatures in TEEs.</strong> NEAR article on the TEE milestone for Chain Signatures — ecosystem context, not a statement that VRX uses TEEs today. <a href="https://www.near.org/blog/chain-signatures-tee" target="_blank" rel="noopener">Read the article</a>.</li>
+<li><strong>VRX resources.</strong> Project site: <a href="https://vettedrealty.com/vrx" target="_blank" rel="noopener">vettedrealty.com/vrx</a>; sandbox: <a href="http://vrx.poolo.org/" target="_blank" rel="noopener">vrx.poolo.org</a>; source: <a href="https://github.com/DUST-CHAIN/vrx-protocol" target="_blank" rel="noopener">DUST-CHAIN/vrx-protocol</a>; NEAR Builders: <a href="https://nearbuilders.org/builders/vetted.near" target="_blank" rel="noopener">vetted.near</a>. The contract surface, events and state codes in Section 4 are taken from the VRX contract source (near-sdk 5.29.1); the deployed testnet contract is at <code>calculating-hand.testnet</code> (version 7, live).</li>
+</ol>
+</section>
+
+<footer>
+<p><strong>Scope note.</strong> This is a technical description and design rationale for VRX, not a security audit, legal opinion or certification of the deployed bytecode. The contract method surface, events and state codes are drawn from the current VRX source; a reader can verify them directly against <code>DUST-CHAIN/vrx-protocol</code> and the testnet contract. The V7 contract is live on testnet (<code>calculating-hand.testnet</code>); confidential-execution integration (Architecture B) remains a roadmap item, clearly marked as such.</p>
+<p>VRX · Vetted Realty · Contact <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a> · Prepared 14 November 2026.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

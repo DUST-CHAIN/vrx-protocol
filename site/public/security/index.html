@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VRX — Security &amp; Audits</title>
+<meta name="description" content="VRX invites independent security review and publishes its audits. First independent audit (Nov 2026): all findings remediated." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0a0e17;--panel:#131a28;--panel2:#18202f;--border:#232d40;--text:#e8ecf4;--dim:#9aa6be;--faint:#63708c;--accent:#3d7dff;--vetted:#38d39f;--sans:"Inter",system-ui,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1100px 560px at 50% -5%,rgba(56,211,159,.05),transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  header{padding:56px 0 8px}
+  .seal{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--vetted);background:rgba(56,211,159,.10);border:1px solid rgba(56,211,159,.35);border-radius:999px;padding:4px 11px}
+  .seal::before{content:"\2713"}
+  h1{font-size:clamp(2rem,5vw,3rem);letter-spacing:-.02em;margin:18px 0 10px}
+  .lead{font-size:1.2rem;color:var(--dim);max-width:680px}
+  h2{font-size:1.2rem;margin:36px 0 10px;letter-spacing:-.01em}
+  p{color:var(--dim);margin:0 0 16px}
+  strong{color:var(--text)}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin:24px 0}
+  ul{color:var(--dim);margin:0 0 16px;padding-left:20px}
+  li{margin:0 0 10px}
+  .asof{color:var(--faint);font-size:.9rem;margin-top:28px}
+  footer{padding:40px 0 60px;color:var(--faint);font-size:.9rem;border-top:1px solid #1c2434;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="seal">Vetted</span>
+    <h1>Security &amp; audits</h1>
+    <p class="lead">We invite independent security review and publish our audits — in a form that strengthens, not endangers, the system.</p>
+  </header>
+
+  <p>VRX invited independent security researchers to assess the platform and committed publicly to publishing
+  every professional audit we receive, and to sharing a portion of any prize we win with the auditors who help
+  strengthen the project.</p>
+
+  <div class="panel">
+    <h2 style="margin-top:0;">First audit — November 2026</h2>
+    <p>An independent security researcher (Vicente Aceituno) performed a black-box assessment of the VRX platform
+    and reported a set of findings spanning the web application and the on-chain contract. We treated it as a
+    serious backlog, not noise.</p>
+    <p><strong>Outcome: every reported finding was remediated, and the web-application fixes are deployed live.</strong>
+    The remaining on-chain fixes are implemented and tested in the contract source and ship with our next contract
+    migration. We verified the remediations against the live target. A small number of lower-risk hardening items
+    remain queued as defence-in-depth.</p>
+    <p style="margin-bottom:0;">We're grateful for the review — exactly the kind of rigorous, independent scrutiny
+    a privacy-first reservation system should welcome — and we've invited a follow-up assessment.</p>
+  </div>
+
+  <h2>Our standing posture</h2>
+  <ul>
+    <li><strong>Privacy is the design.</strong> Personal data, prices and deal terms are never placed on-chain; the
+    chain records only that a reservation happened and who holds it. The confidential half stays off-chain.</li>
+    <li><strong>We publish our audits</strong> (in a form that strengthens, not endangers, the system) and keep the
+    detailed findings and fixes private so they can't serve as a map for an attacker.</li>
+    <li><strong>We welcome more review.</strong> Security researchers: contact us at
+    <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a>.</li>
+  </ul>
+
+  <p class="asof">As of: November 2026.</p>
+
+  <footer>
+    <a href="../">← Back to VRX</a> · Contact <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a>
+  </footer>
+</div>
+</body>
+</html>

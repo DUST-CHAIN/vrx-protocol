@@ -1,0 +1,286 @@
+/* ============================================================================
+   VRX WHITEPAPER — shared A4 "paper" template (print-perfect).
+   Light institutional paper theme carrying the VRX brand (dark-UI tokens
+   translated to ink-on-paper): slate-navy ink, one blue-teal accent, the
+   verification green for seals/confirmed, mono for on-chain refs.
+
+   PRINT CONTRACT (the whole point): at 100% scale, Chrome "Save as PDF",
+   A4, default margins OFF (we own the margin via @page) → every page is a
+   clean A4 with no clipped content and no mid-element breaks. Pages are
+   REAL .sheet blocks on screen (so what you see == what prints), and the
+   @page box matches them exactly.
+   ============================================================================ */
+
+:root {
+  /* Ink on paper — VRX slate translated to a light doc. */
+  --ink:        #141a24;   /* body text — near-black slate */
+  --ink-soft:   #3a4559;   /* secondary text */
+  --ink-faint:  #6b7689;   /* captions, meta */
+  --paper:      #ffffff;
+  --paper-2:    #f5f7fb;   /* wells / callout bg */
+  --paper-3:    #eef2f8;
+  --rule:       #d8dfeb;   /* hairlines */
+  --rule-soft:  #e7ecf4;
+
+  /* The single VRX accent + the verification green (kept from brand). */
+  --accent:      #2f6ef0;  /* a touch deeper than #3d7dff so it reads on white */
+  --accent-weak: #e8effd;
+  --vetted:      #0fae7e;  /* verification green, darkened for AA on white */
+  --vetted-weak: #e2f7f0;
+  --hold:        #b7791f;
+  --danger:      #d64545;
+
+  --mono: "SFMono-Regular", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* A4 geometry. 210 × 297 mm. Inner margin owned here. Margins trimmed (S224) to give each
+     sheet more vertical content budget — the derivations packed sheets a touch full, which spilled
+     a trailing callout/table onto a near-empty page. More room = the tail fits back on its sheet. */
+  --page-w: 210mm;
+  --page-h: 297mm;
+  --margin-x: 18mm;
+  --margin-top: 15mm;
+  --margin-bottom: 13mm;
+}
+
+/* ---- the page box: @page matches the .sheet exactly ---------------------- */
+@page {
+  size: A4;
+  margin: 0;          /* we draw our own margin inside .sheet so screen==print */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper-3);           /* the "desk" behind the sheets (screen only) */
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 10.5pt;                    /* pt so it maps 1:1 to the printed page */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+}
+
+/* ---- the sheet: one physical A4 page ------------------------------------- */
+.sheet {
+  position: relative;
+  width: var(--page-w);
+  min-height: var(--page-h);
+  /* bottom padding is LARGER than --margin-bottom so content always clears the running footer band
+     (S224 — with the exact-height clip, a full sheet's last line was colliding with the footer). */
+  padding: var(--margin-top) var(--margin-x) calc(var(--margin-bottom) + 8mm);
+  margin: 10mm auto;                    /* gap between sheets ON SCREEN only */
+  background: var(--paper);
+  box-shadow: 0 2px 16px rgba(20,26,36,0.14);   /* screen only */
+  overflow: hidden;                     /* a sheet never spills its page */
+  /* running footer sits in the bottom margin band */
+}
+.sheet::after {
+  /* page footer: brand + page number (page number filled by JS or static) */
+  content: attr(data-footer);
+  position: absolute;
+  left: var(--margin-x); right: var(--margin-x);
+  bottom: calc(var(--margin-bottom) * 0.45);
+  font-size: 8pt; color: var(--ink-faint);
+  letter-spacing: 0.02em;
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 5px;
+  display: flex; justify-content: space-between;
+}
+
+/* Each .sheet forces a page boundary when printing. CRITICAL (S224): pin an EXACT height a hair
+   under a physical A4 (296.6mm) and clip — min-height:297mm let a full sheet round up past one page,
+   spilling a near-empty second page after it. Exact height + overflow:hidden = one .sheet is always
+   exactly one physical page. */
+@media print {
+  html, body { background: #fff; }
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+    height: 296.6mm;
+    min-height: 0;
+    overflow: hidden;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+  }
+  .sheet:last-of-type { break-after: auto; page-break-after: auto; }
+  .no-print { display: none !important; }
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+h1, h2, h3, h4 { color: var(--ink); line-height: 1.18; font-weight: 700; margin: 0; }
+h1 { font-size: 26pt; letter-spacing: -0.02em; margin-bottom: 8pt; }
+h2 { font-size: 15pt; letter-spacing: -0.01em; margin: 18pt 0 7pt;
+     padding-bottom: 4pt; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 11.5pt; margin: 13pt 0 4pt; color: var(--ink); }
+h4 { font-size: 10pt; margin: 10pt 0 3pt; color: var(--ink-soft);
+     text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* keep a heading with the text that follows it */
+h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+
+p { margin: 0 0 7pt; color: var(--ink-soft); orphans: 3; widows: 3; }
+p.lead { font-size: 12.5pt; line-height: 1.45; color: var(--ink); margin-bottom: 12pt; }
+strong { color: var(--ink); font-weight: 650; }
+em { color: var(--ink); }
+
+a { color: var(--accent); text-decoration: none; }
+
+.eyebrow {
+  text-transform: uppercase; letter-spacing: 0.16em;
+  font-size: 8pt; font-weight: 700; color: var(--accent);
+  margin: 0 0 8pt;
+}
+
+code, .mono, kbd { font-family: var(--mono); font-size: 0.92em;
+  font-feature-settings: "liga" 0, "calt" 0; font-variant-ligatures: none; }
+:not(pre) > code {
+  background: var(--paper-2); border: 1px solid var(--rule-soft);
+  border-radius: 4px; padding: 0.5px 4px; color: var(--ink);
+}
+
+/* ---- lists -------------------------------------------------------------- */
+ul, ol { margin: 0 0 8pt; padding-left: 18pt; color: var(--ink-soft); }
+li { margin-bottom: 3pt; }
+ul.ticks { list-style: none; padding-left: 0; }
+ul.ticks li { position: relative; padding-left: 18pt; }
+ul.ticks li::before {
+  content: "\2713"; position: absolute; left: 0; top: 0;
+  color: var(--vetted); font-weight: 700;
+}
+
+/* ============================================================================
+   COMPONENTS
+   ============================================================================ */
+
+/* The vetted seal pill */
+.seal {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 7.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--vetted); background: var(--vetted-weak);
+  border: 1px solid var(--vetted); border-radius: 999px; padding: 2px 9px;
+}
+.seal::before { content: "\2713"; }
+
+/* on-chain mono chip */
+.chip {
+  font-family: var(--mono); font-size: 8pt; color: var(--ink-soft);
+  background: var(--paper-2); border: 1px solid var(--rule); border-radius: 5px; padding: 1px 6px;
+}
+
+/* callout / note box — never breaks across a page */
+.callout {
+  background: var(--paper-2); border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent); border-radius: 7px;
+  padding: 10pt 13pt; margin: 10pt 0;
+  break-inside: avoid; page-break-inside: avoid;
+}
+.callout.vetted { border-left-color: var(--vetted); }
+.callout.warn  { border-left-color: var(--hold); }
+.callout .k { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.1em;
+              font-weight: 700; color: var(--ink-faint); margin: 0 0 4pt; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* code block */
+pre {
+  background: #0f1522; color: #dfe6f2;         /* a dark code card reads well even on paper */
+  border-radius: 8px; padding: 11pt 13pt; margin: 9pt 0;
+  font-family: var(--mono); font-size: 8.5pt; line-height: 1.5;
+  font-feature-settings: "liga" 0, "calt" 0; font-variant-ligatures: none;  /* keep // as two slashes */
+  overflow: hidden; white-space: pre-wrap; word-break: break-word;
+  break-inside: avoid; page-break-inside: avoid;
+}
+pre .c  { color: #7b8aa6; }  /* comment */
+pre .k  { color: #6fb3ff; }  /* keyword */
+pre .s  { color: #7fd6a9; }  /* string */
+pre .n  { color: #e4b971; }  /* number/const */
+pre .f  { color: #c9a6f0; }  /* function/type */
+
+/* data table */
+table { width: 100%; border-collapse: collapse; margin: 9pt 0; font-size: 9pt;
+        break-inside: avoid; page-break-inside: avoid; }
+thead th {
+  text-align: left; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-faint); border-bottom: 1.5px solid var(--rule); padding: 5pt 8pt;
+}
+tbody td { padding: 5pt 8pt; border-bottom: 1px solid var(--rule-soft); color: var(--ink-soft); vertical-align: top; }
+tbody tr:last-child td { border-bottom: none; }
+td .mono, td code { font-size: 8.5pt; }
+
+/* figure + inline SVG diagram */
+figure { margin: 11pt 0; break-inside: avoid; page-break-inside: avoid; text-align: center; }
+figure svg { max-width: 100%; height: auto; }
+.diagram {
+  border: 1px solid var(--rule); border-radius: 10px; background: var(--paper);
+  padding: 12pt; overflow: hidden;
+}
+figcaption { color: var(--ink-faint); font-size: 8pt; margin-top: 7pt; letter-spacing: 0.01em; }
+
+/* key-value "fact row" */
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 4pt 14pt; margin: 9pt 0; font-size: 9.5pt; }
+.facts dt { color: var(--ink-faint); text-transform: uppercase; font-size: 8pt; letter-spacing: 0.06em; padding-top: 1pt; }
+.facts dd { margin: 0; color: var(--ink-soft); }
+
+/* two-column flow within a page (for dense sections) */
+.cols-2 { column-count: 2; column-gap: 16pt; }
+.cols-2 > * { break-inside: avoid; }
+
+/* status tag text colors */
+.t-live { color: var(--vetted); font-weight: 650; }
+.t-soon { color: var(--hold);   font-weight: 650; }
+
+/* footnote rule + small print */
+.fn { font-size: 8pt; color: var(--ink-faint); border-top: 1px solid var(--rule-soft); padding-top: 6pt; margin-top: 10pt; }
+.fn p { font-size: 8pt; color: var(--ink-faint); margin-bottom: 3pt; }
+
+/* ---- COVER page -------------------------------------------------------- */
+.cover { display: flex; flex-direction: column; min-height: calc(var(--page-h) - var(--margin-top) - var(--margin-bottom)); }
+.cover .top { flex: 0 0 auto; }
+.cover .mid { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+.cover .bot { flex: 0 0 auto; }
+.cover h1 { font-size: 30pt; line-height: 1.1; }
+.cover .subtitle { font-size: 13pt; color: var(--ink-soft); margin-top: 10pt; max-width: 150mm; }
+.brand-row { display: flex; align-items: center; gap: 10px; }
+.brand-row .logo { width: 30px; height: 30px; }
+.brand-row .name { font-weight: 700; font-size: 13pt; letter-spacing: -0.01em; }
+.cover .meta { display: flex; gap: 22pt; flex-wrap: wrap; font-size: 9pt; color: var(--ink-faint); }
+.cover .meta b { display: block; color: var(--ink); font-weight: 650; font-size: 9.5pt; margin-top: 2pt; }
+.classification {
+  display: inline-block; font-size: 8pt; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 6px;
+}
+.classification.internal { color: var(--danger); background: #fdecec; border: 1px solid #f3b9b9; }
+.classification.public   { color: var(--vetted); background: var(--vetted-weak); border: 1px solid var(--vetted); }
+
+/* divider */
+hr.rule { border: none; border-top: 1px solid var(--rule); margin: 12pt 0; }
+
+/* ---- SEVERABLE SECRET blocks -------------------------------------------
+   A sheet/figure/section marked [data-secret] carries mechanism that must be
+   REMOVABLE to produce a "more-safe" trimmed version. On screen it shows with a
+   red SECRET band. To make the trimmed doc: add class "trimmed" to <body> (or
+   run the strip script) → every [data-secret] block is removed from layout AND
+   print. This makes "derive a safe version" a one-flag mechanical operation,
+   never a rewrite. */
+[data-secret] { position: relative; }
+[data-secret]::before {
+  content: "SECRET · internal only — not for the trimmed/public version";
+  display: block; font-size: 7.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--danger); background: #fdecec; border: 1px solid #f3b9b9; border-radius: 6px;
+  padding: 3px 9px; margin-bottom: 8pt;
+}
+body.trimmed [data-secret] { display: none !important; }
+
+/* screen-only toolbar */
+.toolbar {
+  position: fixed; top: 12px; right: 12px; z-index: 50;
+  background: #141a24; color: #fff; border-radius: 10px; padding: 8px 12px;
+  font-family: var(--sans); font-size: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  display: flex; gap: 10px; align-items: center;
+}
+.toolbar button { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: 7px 12px; font-weight: 600; cursor: pointer; font-size: 12px; }

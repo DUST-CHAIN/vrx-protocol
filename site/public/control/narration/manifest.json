@@ -1,0 +1,136 @@
+{
+  "voice": "en-US-AriaNeural",
+  "rate": "-4%",
+  "clips": {
+    "intro": {
+      "file": "intro.mp3",
+      "hash": "4ebe2a965019",
+      "chars": 594
+    },
+    "happy-buyer": {
+      "file": "happy-buyer.mp3",
+      "hash": "a84b9c8b6984",
+      "chars": 222
+    },
+    "developer-desk": {
+      "file": "developer-desk.mp3",
+      "hash": "7bd88ad175f3",
+      "chars": 204
+    },
+    "agent-lane": {
+      "file": "agent-lane.mp3",
+      "hash": "4021c5f51469",
+      "chars": 193
+    },
+    "read-chips": {
+      "file": "read-chips.mp3",
+      "hash": "c6c5f4795306",
+      "chars": 190
+    },
+    "reservation-doc": {
+      "file": "reservation-doc.mp3",
+      "hash": "55885c51750f",
+      "chars": 182
+    },
+    "term-requests": {
+      "file": "term-requests.mp3",
+      "hash": "0adb128a5f78",
+      "chars": 224
+    },
+    "sp-reconciliation": {
+      "file": "sp-reconciliation.mp3",
+      "hash": "7cfc4635bd87",
+      "chars": 180
+    },
+    "escrow-hold": {
+      "file": "escrow-hold.mp3",
+      "hash": "e723ce8dca58",
+      "chars": 179
+    },
+    "pay-safety": {
+      "file": "pay-safety.mp3",
+      "hash": "755d7dc8a1dd",
+      "chars": 185
+    },
+    "escrow-veto": {
+      "file": "escrow-veto.mp3",
+      "hash": "9ad634685e40",
+      "chars": 199
+    },
+    "confirm-signing": {
+      "file": "confirm-signing.mp3",
+      "hash": "11670c01d0f4",
+      "chars": 210
+    },
+    "two-buyer-race": {
+      "file": "two-buyer-race.mp3",
+      "hash": "21aba3bcfe93",
+      "chars": 200
+    },
+    "n-concurrent-race": {
+      "file": "n-concurrent-race.mp3",
+      "hash": "d660c4288f5b",
+      "chars": 147
+    },
+    "forged-caller": {
+      "file": "forged-caller.mp3",
+      "hash": "ee865850c1c2",
+      "chars": 177
+    },
+    "eligibility-refusal": {
+      "file": "eligibility-refusal.mp3",
+      "hash": "f5766f967c45",
+      "chars": 196
+    },
+    "commission-disclosure": {
+      "file": "commission-disclosure.mp3",
+      "hash": "50501d29cf34",
+      "chars": 276
+    },
+    "floorplan-gate": {
+      "file": "floorplan-gate.mp3",
+      "hash": "d9e10c6ec0af",
+      "chars": 210
+    },
+    "pii-boundary": {
+      "file": "pii-boundary.mp3",
+      "hash": "c1be1bd6a36b",
+      "chars": 222
+    },
+    "sp-gate": {
+      "file": "sp-gate.mp3",
+      "hash": "0feca8a29b53",
+      "chars": 211
+    },
+    "agency-coherence": {
+      "file": "agency-coherence.mp3",
+      "hash": "d75d355c14ec",
+      "chars": 191
+    },
+    "operator-materialize": {
+      "file": "operator-materialize.mp3",
+      "hash": "dbd15e28da2a",
+      "chars": 181
+    },
+    "negotiate-extras": {
+      "file": "negotiate-extras.mp3",
+      "hash": "a0861c22021b",
+      "chars": 237
+    },
+    "negotiate-discount": {
+      "file": "negotiate-discount.mp3",
+      "hash": "4cf2399af16c",
+      "chars": 211
+    },
+    "negotiate-to-reserve": {
+      "file": "negotiate-to-reserve.mp3",
+      "hash": "55301a8ca3e3",
+      "chars": 190
+    },
+    "outro": {
+      "file": "outro.mp3",
+      "hash": "98259ea3e515",
+      "chars": 337
+    }
+  }
+}

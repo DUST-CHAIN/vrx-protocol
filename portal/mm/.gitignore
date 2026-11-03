@@ -1,0 +1,11 @@
+# MM workspace — Next build + deps + local scratch
+/node_modules
+/.next
+/out
+next-env.d.ts
+*.tsbuildinfo
+
+# local authored packs / scratch exports (never commit a developer's draft)
+/.packs
+/exports
+*.pack.zip

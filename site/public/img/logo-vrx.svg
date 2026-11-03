@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="VRX">
+  <!-- Placeholder mark: a shield (trust) with a check (vetted). Replace with the Gemini logo (see IMAGE_PROMPTS.md). -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3d7dff"/>
+      <stop offset="1" stop-color="#38d39f"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 4 L54 12 V30 C54 46 44 55 32 60 C20 55 10 46 10 30 V12 Z"
+        fill="#131a28" stroke="url(#g)" stroke-width="2.5"/>
+  <path d="M22 32 l7 7 l14 -16" fill="none" stroke="#38d39f" stroke-width="4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

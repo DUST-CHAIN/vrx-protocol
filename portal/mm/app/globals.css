@@ -1,0 +1,1913 @@
+/* MM Structured face — light, dense, schema-driven (§3 Face 1).
+ *
+ * THEMING: the WHOLE app is consistently light OR dark — the left FRAME uses the same mode
+ * palette as the main pane (no more dark-pane / light-main split). Two independent axes, both persisted:
+ *   - data-mode = "light" | "dark"  → surface/ink/line/frame palette
+ *   - --accent / --accent-weak / --accent-ink  → the chosen accent colour (set inline from the picker)
+ * Accent-weak/ink are mode-sensitive, so they're derived in CSS (color-mix) rather than hard-coded per hue.
+ */
+
+:root {
+  /* default accent = VRX blue (studio/board identity); the picker overwrites --accent inline on <body>.
+ * unification: the WHOLE MM app is now ONE dark look modelled on the studio/board canvas.
+   * These hex values MUST stay in lockstep with lib/theme.ts T.* (the canvas-world reads them from there). */
+  --accent: #3d7dff;
+
+  --radius: 8px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* studio canvas-world tokens, exposed to the class-driven form-world too (one palette) */
+  --bg2: #0f1420;            /* inset / input / sunken surfaces (T.bg2) */
+  --panel2: #18202f;         /* raised controls (T.panel2) */
+  --vetted: #38d39f;         /* green: ok / fits (T.vetted) */
+
+  /* accent tints derived from --accent so they track the picked colour AND the mode. */
+  --accent-weak: color-mix(in srgb, var(--accent) 16%, var(--panel));
+  --accent-ink: color-mix(in srgb, var(--accent) 72%, var(--ink));
+}
+
+/* ---------- DARK (the single unified default — matches lib/theme.ts T.*) ----------
+ *: dark is now the default AND the `data-mode="dark"` state, so there's no light flash before JS
+ * hydrates useChrome. The light block below is kept ONLY as an opt-in via the theme toggle. */
+:root,
+body[data-mode="dark"] {
+  --bg: #0a0e17;             /* T.bg */
+  --panel: #131a28;          /* T.panel */
+  --ink: #e8ecf4;            /* T.text */
+  --ink-dim: #9aa6be;        /* T.dim */
+  --line: #232d40;           /* T.border */
+  --line-strong: #2f3b52;    /* a touch above T.border for emphasis */
+
+  --frame-bg: #0c111c;       /* T.board — the frame reads as the board backdrop */
+  --frame-ink: #e8ecf4;
+  --frame-ink-dim: #9aa6be;
+  --frame-ink-faint: #8591a8; /* T.faint — section labels / counts */
+  --frame-hover: #18202f;    /* T.panel2 */
+  --frame-line: #232d40;     /* T.border */
+  --tree-rail: #8591a8;      /* muted rail on dark */
+
+  --ok: #38d39f;             /* T.vetted */
+  --ok-weak: #0f2a22;
+  --err: #ff6b6b;            /* T.danger */
+  --err-weak: #3a1515;
+  --warn: #e8b84b;           /* T.hold */
+  --warn-weak: #3a2c10;
+}
+
+/* ---------- LIGHT (opt-in only via the theme toggle; no longer the default) ---------- */
+body[data-mode="light"] {
+  --bg: #f1f5f9;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --ink-dim: #475569;        /* darker small text for visibility */
+  --line: #cbd5e1;
+  --line-strong: #94a3b8;
+  --bg2: #eef2f7;
+  --panel2: #f8fafc;
+
+  /* frame = a slightly deeper tint of the same light world (NOT navy) */
+  --frame-bg: #ffffff;
+  --frame-ink: #0f172a;
+  --frame-ink-dim: #334155;  /* darker */
+  --frame-ink-faint: #475569; /* darker — section labels / counts now readable */
+  --frame-hover: #eef2f7;
+  --frame-line: #94a3b8;
+  --tree-rail: #0f172a;      /* black tree guide-rail lines */
+
+  --ok: #16a34a;
+  --ok-weak: #dcfce7;
+  --err: #dc2626;
+  --err-weak: #fee2e2;
+  --warn: #b45309;
+  --warn-weak: #fef3c7;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/*  GLOBAL themed scrollbars — the OS default scrollbar is ugly on the dark panels (the tree nav,
+   the right rails, the inspector all showed it). Apply the slim themed look app-wide via the palette tokens so
+   every scroll container inherits it; the per-component .mm-units / .mm-paintgrid rules still override where a
+   tighter size is wanted. Firefox uses scrollbar-width/color; WebKit/Blink use the ::-webkit pseudo-elements. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-dim);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* ---- App shell ---- */
+.mm-shell {
+  display: grid;
+  grid-template-columns: var(--frame-w, 300px) 10px 1fr 10px var(--rail-w, 320px);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---- Left FRAME (§2) ---- */
+.mm-frame {
+  background: var(--frame-bg);
+  color: var(--frame-ink);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--frame-line);
+}
+
+/* draggable vertical splitter between FRAME and main. The grid reserves 6px for it; we render a wider,
+ * clearly grabbable handle centred in that lane (a subtle grip that brightens on hover/drag) so it reads
+ * as resizable — before it was a near-invisible 2px line (: "allow resize, it's too narrow"). */
+.mm-splitter {
+  background: transparent;
+  cursor: col-resize;
+  position: relative;
+  z-index: 2;
+}
+.mm-splitter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  border-radius: 3px;
+  background: var(--line);
+  transition: background 0.12s, width 0.12s;
+}
+/* the grip dots — three stacked pips, centred, so the handle is unmistakably draggable */
+.mm-splitter::before {
+  content: "⋮";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--frame-ink, #8a94a6);
+  opacity: 0.45;
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: none;
+  transition: opacity 0.12s, color 0.12s;
+}
+.mm-splitter:hover::after,
+.mm-splitter[data-dragging="true"]::after {
+  background: var(--accent);
+  width: 4px;
+}
+.mm-splitter:hover::before,
+.mm-splitter[data-dragging="true"]::before {
+  opacity: 0.9;
+  color: var(--accent);
+}
+.mm-frame__head {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--frame-hover);
+}
+.mm-brand {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 16px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mm-brand__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.mm-faceswitch {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  background: var(--frame-hover);
+  padding: 3px;
+  border-radius: var(--radius);
+}
+.mm-faceswitch button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  border: 0;
+  background: transparent;
+  color: var(--frame-ink-dim);
+  padding: 6px 4px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* the plain-language sub-label under each face name — small, quiet, so the word still leads */
+.mm-faceswitch__sub {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+  text-transform: none;
+}
+.mm-faceswitch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+.mm-faceswitch button[aria-pressed="true"] .mm-faceswitch__sub {
+  opacity: 0.85;
+}
+.mm-faceswitch button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* The secondary "New from AI →" link under the face switch — structure leads; this is the side entrance to
+   the separate from-scratch AI generator, so it reads quiet, not as a 4th face. */
+.mm-frame__aidoor {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--frame-ink-dim);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.12s, color 0.12s;
+}
+.mm-frame__aidoor:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+.mm-select-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.mm-select-row label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--frame-ink-dim);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mm-select-row select {
+  background: var(--frame-hover);
+  color: var(--frame-ink);
+  border: 1px solid var(--frame-line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  min-width: 130px;
+  font-weight: 500;
+}
+
+/* collapsible theme switcher — folds up when not in use */
+.mm-theme {
+  margin-top: 12px;
+}
+.mm-theme__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+  padding: 6px 10px;
+  border: 1px solid var(--frame-line);
+  border-radius: 7px;
+  background: var(--frame-hover);
+  user-select: none;
+}
+.mm-theme__summary::-webkit-details-marker {
+  display: none;
+}
+.mm-theme__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--frame-ink-dim);
+}
+.mm-theme__current {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--frame-ink);
+}
+.mm-theme__current::after {
+  content: "▾";
+  font-size: 9px;
+  color: var(--frame-ink-faint);
+}
+.mm-theme[open] .mm-theme__current::after {
+  content: "▴";
+}
+.mm-theme__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--frame-line);
+}
+.mm-theme__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 2px 2px;
+}
+
+/* Settings panel — AI keys. Reuses the.mm-theme disclosure chrome. */
+.mm-settings__body { gap: 12px; }
+.mm-settings__intro { font-size: 11px; color: var(--ink-dim); line-height: 1.5; margin: 0; }
+.mm-settings__key { display: flex; flex-direction: column; gap: 4px; }
+.mm-settings__keyhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.mm-settings__keylabel { font-size: 12px; font-weight: 600; color: var(--ink); }
+.mm-settings__keyok { font-size: 11px; color: var(--ok); }
+.mm-settings__what { font-size: 11px; color: var(--ink-dim); line-height: 1.4; }
+.mm-settings__input {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+}
+.mm-settings__getlink { font-size: 11px; color: var(--accent); text-decoration: none; }
+.mm-settings__getlink:hover { text-decoration: underline; }
+.mm-settings__getlink--small { align-self: flex-start; font-size: 10px; }
+.mm-mode-toggle {
+  display: flex;
+  gap: 3px;
+  background: var(--frame-hover);
+  border: 1px solid var(--frame-line);
+  padding: 3px;
+  border-radius: 7px;
+}
+.mm-mode-toggle span {
+  flex: 1;
+  text-align: center;
+  padding: 5px 4px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--frame-ink-dim);
+}
+.mm-mode-toggle span.on {
+  background: var(--accent);
+  color: #fff;
+}
+.mm-swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mm-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  box-shadow: 0 0 0 1px var(--frame-line);
+}
+.mm-swatch[aria-pressed="true"] {
+  border-color: var(--frame-bg);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* ---- Entity tree ---- */
+.mm-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px 14px;
+}
+.mm-tree__section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--frame-ink-faint);
+  padding: 16px 6px 6px;
+}
+
+/* A node row: [twist] [kind tag] [name ......... count] */
+.mm-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  color: var(--frame-ink);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.3;
+  user-select: none;
+  position: relative;
+}
+.mm-node:hover {
+  background: var(--frame-hover);
+}
+.mm-node[aria-selected="true"] {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.mm-node__twist {
+  width: 12px;
+  color: var(--frame-ink-faint);
+  font-size: 9px;
+  flex: 0 0 auto;
+  text-align: center;
+}
+.mm-node[aria-selected="true"] .mm-node__twist {
+  color: rgba(255, 255, 255, 0.85);
+}
+/* Small colour-coded kind tag replaces the emoji (reads at a glance). */
+.mm-tag {
+  flex: 0 0 auto;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #fff;
+}
+.mm-tag--dev { background: #0ea5e9; }
+.mm-tag--co { background: #8b5cf6; }
+.mm-tag--cx { background: #f59e0b; }
+.mm-tag--bl { background: #10b981; }
+.mm-tag--un { background: #64748b; }
+.mm-tag--tm { background: #ec4899; }
+.mm-node[aria-selected="true"] .mm-tag {
+  background: rgba(255, 255, 255, 0.25);
+}
+.mm-node__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mm-node__count {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--frame-ink-faint);
+  font-variant-numeric: tabular-nums;
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+.mm-node[aria-selected="true"] .mm-node__count {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+/* (parked item 2) the approved-floor ✓ in the tree — green, sparse (only on confirmed floors). If a floor
+   has no unit count the ✓ carries the auto-margin to sit at the right edge like the count would. */
+.mm-node__ok {
+  margin-left: auto; /* sit at the right edge when it's the only trailing mark (no unit count) */
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mm-kind-building, #22c55e);
+}
+.mm-node__count + .mm-node__ok { margin-left: 6px; } /* count already took the auto-gap → just a small space */
+.mm-node[aria-selected="true"] .mm-node__ok { color: #fff; }
+/*  the approved state line inside the floor inspector panel */
+.mm-floor-approved {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mm-kind-building, #22c55e);
+  padding: 2px 0;
+}
+
+/* Indentation with a faint guide rail so depth is unmistakable. */
+.mm-node--child {
+  margin-left: 14px;
+  border-left: 2px solid var(--tree-rail);
+  border-radius: 0 7px 7px 0;
+}
+.mm-node--gchild {
+  margin-left: 28px;
+  border-left: 2px solid var(--tree-rail);
+  border-radius: 0 7px 7px 0;
+}
+.mm-node--leaf {
+  font-size: 13px;
+}
+/* geo tree: focused node (you're drawing inside it) gets an accent-left border; selected = standard highlight */
+.mm-node--focused {
+  border-left: 2px solid var(--accent);
+  padding-left: calc(var(--node-indent, 0px) - 2px);
+  background: var(--accent-weak, rgba(13,148,136,0.08));
+}
+/* preview nav — per-building unit list */
+.mm-preview-nav__units { overflow: hidden; }
+.mm-preview-nav__floor {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  padding: 6px 16px 2px;
+}
+
+/* A quiet, obviously-clickable add action — NOT a dashed ghost box. */
+.mm-tree__add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 3px 0 2px;
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+.mm-tree__add::before {
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(13, 148, 136, 0.18);
+  color: var(--accent);
+  font-weight: 800;
+}
+.mm-tree__add:hover {
+  background: var(--frame-hover);
+}
+.mm-tree__add--indent {
+  margin-left: 28px;
+  width: calc(100% - 28px);
+}
+/* "New project" footer button — a quieter sibling of mm-tree__add (muted, no "+" glyph); arms red before wiping. */
+.mm-newproj {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 2px 0;
+  background: transparent;
+  border: 0;
+  color: var(--frame-ink-dim);
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.mm-newproj:hover {
+  background: var(--frame-hover);
+  color: var(--frame-ink);
+}
+.mm-newproj--armed {
+  color: var(--err);
+  background: rgba(255, 107, 107, 0.12);
+}
+.mm-tree__group {
+  padding: 2px 0;
+}
+.mm-frame__foot {
+  border-top: 1px solid var(--frame-line);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mm-frame__foot .mm-node {
+  font-size: 13px;
+}
+.mm-frame__foot .mm-node--disabled {
+  color: var(--frame-ink-faint);
+  cursor: default;
+}
+.mm-frame__foot .mm-node--disabled:hover {
+  background: transparent;
+}
+.mm-frame__summary {
+  font-size: 12px;
+  color: var(--frame-ink-faint);
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--frame-line);
+  margin-top: 4px;
+}
+
+/* ---- Center editor ---- */
+.mm-main {
+  overflow-y: auto;
+  padding: 24px 32px 80px;
+}
+.mm-main__crumbs {
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+.mm-main__crumbs b {
+  color: var(--ink);
+}
+.mm-main__title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 20px;
+}
+.mm-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.mm-card h3 {
+  margin: 0 0 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+}
+.mm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 18px;
+}
+.mm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mm-field--full {
+  grid-column: 1 / -1;
+}
+.mm-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.mm-field .hint {
+  font-weight: 400;
+  color: var(--ink-dim);
+  font-size: 11px;
+}
+.mm-field input,
+.mm-field select,
+.mm-field textarea {
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 7px 9px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.mm-field input:focus,
+.mm-field select:focus,
+.mm-field textarea:focus {
+  outline: 2px solid var(--accent-weak);
+  border-color: var(--accent);
+}
+.mm-field textarea {
+  min-height: 90px;
+  resize: vertical;
+  font-family: inherit;
+}
+.mm-field .inherited {
+  font-size: 11px;
+  color: var(--accent-ink);
+  background: var(--accent-weak);
+  border-radius: 4px;
+  padding: 1px 6px;
+  align-self: flex-start;
+}
+
+.mm-btn {
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.mm-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/*  a toggle button in its ON state (e.g. the marker⇄shape view toggle, D-). */
+.mm-btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mm-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mm-btn--primary:hover {
+  color: #fff;
+  filter: brightness(1.05);
+}
+.mm-btn--danger:hover {
+  border-color: var(--err);
+  color: var(--err);
+}
+.mm-btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- Units grid ---- */
+.mm-units {
+  /* ONE scroll container for both axes (vertical = virtualized rows, horizontal = wide columns). The max-height is
+     set inline on the element. Themed, slim scrollbars so a tall grid doesn't show the OS default (ugly on dark). */
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.mm-units::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.mm-units::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mm-units::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 6px;
+  border: 2px solid var(--panel);
+}
+.mm-units::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-dim);
+}
+.mm-units::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Paint grid: full natural HEIGHT (no vertical scroll box), only a THIN horizontal scrollbar when the columns
+ are wider than the pane. Matches the slim themed look of.mm-units but without the table rules. (.) */
+.mm-paintgrid {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.mm-paintgrid::-webkit-scrollbar {
+  height: 8px;
+}
+.mm-paintgrid::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mm-paintgrid::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 6px;
+}
+.mm-paintgrid::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-dim);
+}
+
+.mm-units table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+.mm-units th,
+.mm-units td {
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+.mm-units th {
+  background: var(--bg);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-dim);
+  position: sticky;
+  top: 0;
+}
+.mm-units tr.bad td {
+  background: var(--err-weak);
+}
+.mm-dropzone {
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+  color: var(--ink-dim);
+  background: var(--bg);
+}
+.mm-dropzone.drag {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent-ink);
+}
+
+/* ---- Right validation RAIL (§3 Face 1) ---- */
+.mm-rail {
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/*  the Studio right column holds TWO stacked rails: the building-level subtype-plan panel over the per-node
+   inspector. The column owns the single left border; the nested rails drop theirs. The panel is capped so the
+   inspector always keeps room; each scrolls its own body. */
+.mm-rail-col {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--line);
+  overflow: hidden;
+  min-height: 0;
+}
+.mm-rail-col > .mm-rail { border-left: none; }
+.mm-rail--subtypes {
+  flex: 0 0 auto;
+  max-height: 44%;
+  border-bottom: 1px solid var(--line);
+  overflow-y: auto;
+}
+.mm-rail-col > .mm-rail:last-child { flex: 1 1 auto; min-height: 0; }
+
+.mm-subtypes { padding: 10px 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.mm-subtypes__gauge { font-size: 12.5px; color: var(--ink); }
+.mm-subtypes__gauge b { color: var(--accent-ink); font-size: 14px; }
+.mm-subtypes__bld { color: var(--ink-dim); }
+.mm-subtypes__hint { font-size: 11px; color: var(--ink-dim); line-height: 1.45; }
+.mm-subtype-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.mm-subtype-row__main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mm-subtype-row__label { font-weight: 600; font-size: 12.5px; color: var(--ink); }
+.mm-subtype-row__sqm { font-family: var(--mono); font-size: 11px; color: var(--ink-dim); }
+.mm-subtype-row__count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-left: auto;
+}
+.mm-subtype-row__chip {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.mm-subtype-row__chip.is-authored { background: color-mix(in srgb, var(--vetted) 20%, transparent); color: var(--vetted); }
+.mm-subtype-row__chip.is-none { background: var(--panel2); color: var(--ink-dim); }
+.mm-subtype-row__actions { display: flex; gap: 6px; }
+.mm-subtypes__warn {
+  font-size: 11px;
+  color: var(--err, #ff5c6c);
+  line-height: 1.45;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--err, #ff5c6c) 40%, transparent);
+  border-radius: 6px;
+}
+.mm-rail__head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.mm-rail__title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+  margin: 0 0 10px;
+}
+.mm-rail__gauge {
+  display: flex;
+  gap: 8px;
+}
+.mm-chip {
+  flex: 1;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+  font-weight: 700;
+}
+.mm-chip small {
+  display: block;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+.mm-chip--ok {
+  background: var(--ok-weak);
+  color: var(--ok);
+}
+.mm-chip--err {
+  background: var(--err-weak);
+  color: var(--err);
+}
+.mm-chip--warn {
+  background: var(--warn-weak);
+  color: var(--warn);
+}
+.mm-rail__export {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.mm-rail__export .mm-btn {
+  width: 100%;
+}
+.mm-rail__note {
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-top: 8px;
+  text-align: center;
+}
+.mm-findings {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+}
+.mm-finding {
+  border-left: 3px solid var(--line-strong);
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 0 6px 6px 0;
+  background: var(--bg);
+  font-size: 12px;
+}
+.mm-finding--error {
+  border-color: var(--err);
+}
+.mm-finding--warning {
+  border-color: var(--warn);
+}
+.mm-finding__where {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+}
+.mm-finding__msg {
+  color: var(--ink);
+}
+.mm-allclear {
+  text-align: center;
+  color: var(--ok);
+  padding: 24px 12px;
+  font-weight: 600;
+}
+
+/* Completeness report — advisory "what's not filled" list under the schema findings. */
+.mm-readiness {
+  border-top: 1px solid var(--line);
+  padding: 8px 10px 14px;
+  overflow-y: auto;
+}
+.mm-readiness__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+.mm-readiness__counts { display: inline-flex; gap: 8px; text-transform: none; letter-spacing: 0; font-size: 11px; }
+.mm-readiness__att { color: var(--warn); }
+.mm-readiness__info { color: var(--ink-dim); }
+.mm-readiness__done { color: var(--ok); }
+.mm-readiness__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-left: 3px solid var(--line-strong);
+  background: var(--bg);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+.mm-readiness__item:disabled { cursor: default; opacity: 0.8; }
+.mm-readiness__item--attention { border-left-color: var(--warn); }
+.mm-readiness__item--info { border-left-color: var(--line-strong); }
+.mm-readiness__item:not(:disabled):hover { background: var(--panel); }
+.mm-readiness__label { color: var(--ink); font-size: 12px; }
+.mm-readiness__detail { color: var(--ink-dim); font-size: 11px; margin-top: 2px; }
+
+.mm-empty {
+  color: var(--ink-dim);
+  text-align: center;
+  padding: 60px 20px;
+}
+
+/* ---- Studio face: the §4d drawing board (slice 2) ---- */
+.mm-main--canvas {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.mm-canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.mm-canvas-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mm-canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  /*  plain board — NO fixed 28px CSS grid. That cosmetic grid predated the real metric grid and
+     LIED about scale: a reader counting its ~28px squares against the "N m" scale bar saw many more divisions
+ than the label (caught it). The honest, scale-true grid is MetreGrid (.mm-grid__line + scale bar),
+     which is the only grid now. */
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: crosshair;
+  user-select: none;
+}
+.mm-canvas.is-panning { cursor: grab; }
+.mm-canvas.is-panning:active { cursor: grabbing; }
+.mm-canvas__frame {
+  fill: var(--panel);
+  fill-opacity: 0.35;
+  stroke: var(--line-strong);
+  stroke-dasharray: 4 4;
+}
+/* (B3b "the world") pan/zoom navigation toolbar */
+.mm-world-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mm-world-btn {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink-dim);
+  font-size: 11px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.mm-world-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.mm-world-btn:disabled { opacity: 0.4; cursor: default; }
+.mm-world-zoom {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  min-width: 38px;
+  text-align: right;
+}
+.mm-world-hint { font-size: 11px; color: var(--ink-dim); }
+/* (Slice C) unit PIN — a 4 m metre-space dot + label for a unit whose real shape isn't authored yet */
+.mm-pin { cursor: move; }
+.mm-pin__dot {
+  fill: var(--mm-kind-unit);
+  fill-opacity: 0.95;
+  stroke: var(--panel);
+  stroke-width: 1.5;
+}
+.mm-pin.is-selected .mm-pin__dot {
+  stroke: #fff;
+  stroke-width: 2.5;
+  fill-opacity: 1;
+}
+/*  WHITE label with a STRONG dark halo (paint-order stroke) so it reads on ANY dot fill — purple, pink,
+   or over a coloured status ring. The halo is near-opaque + wide enough that the white glyph never washes out. */
+.mm-pin__label {
+  /* NB: NO font-size / stroke-width here — both are set inline per-pin (fontSize + strokeWidth attrs) so they
+     scale with the dot/zoom. A CSS value would WIN over the inline presentation attribute (stylesheet beats
+     attr) and pin every label to one size — exactly the "fonts aren't getting larger" bug. Keep sizing inline. */
+  font-weight: 800;
+  fill: #fff;
+  stroke: rgba(0, 0, 0, 0.9);
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.mm-pin__sub {
+  font-weight: 700;
+  fill: #fff;
+}
+/* (Slice D) pin→polygon CTA — shown inside an empty focused unit; click seeds the editable polygon */
+.mm-draw-shape-cta { cursor: pointer; }
+.mm-draw-shape-cta rect {
+  fill: var(--mm-kind-unit);
+  fill-opacity: 0.18;
+  stroke: var(--mm-kind-unit);
+  stroke-width: 1.5;
+}
+.mm-draw-shape-cta:hover rect { fill-opacity: 0.3; }
+.mm-draw-shape-cta__t1 { fill: var(--ink); font-size: 13px; font-weight: 700; pointer-events: none; }
+.mm-draw-shape-cta__t2 { fill: var(--ink-dim); font-size: 10px; pointer-events: none; }
+/* (B3 "the world") metric grid — faint real-metre squares + a labelled scale bar */
+.mm-grid__line {
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+}
+/*  the scale LEGEND must READ (: "legend almost invisible, too dark") — bright bar + ink label with a
+   subtle halo so it stands out over the grid/backdrop, not the dim border colours it used before. */
+.mm-grid__scalebar {
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-opacity: 0.85;
+}
+.mm-grid__scalelabel {
+  fill: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.mm-geo__rect {
+  fill: var(--accent);
+  fill-opacity: 0.12;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  cursor: move;
+}
+.mm-geo.is-selected .mm-geo__rect {
+  stroke-width: 2.5;
+  fill-opacity: 0.22;
+}
+/* (Slice B) child boxes follow the KIND colour grammar too (land=blue, building=green, floor=yellow). */
+.mm-geo--land .mm-geo__rect { stroke: var(--mm-kind-land); fill: var(--mm-kind-land); }
+.mm-geo--building .mm-geo__rect { stroke: var(--mm-kind-building); fill: var(--mm-kind-building); }
+.mm-geo--floor .mm-geo__rect { stroke: var(--mm-kind-floor); fill: var(--mm-kind-floor); }
+.mm-geo--prop .mm-geo__rect { stroke: #a855f7; fill: #a855f7; }
+.mm-geo__label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--ink);
+  pointer-events: none;
+}
+.mm-geo__sub {
+  font-size: 10px;
+  fill: var(--ink-dim);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+.mm-geo__handle {
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 1.5;
+  cursor: nwse-resize;
+}
+.mm-geo__draw {
+  fill: var(--accent);
+  fill-opacity: 0.1;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+  pointer-events: none;
+}
+/* locked shape: dimmed, dashed outline, no move cursor — the shape is held fixed */
+.mm-geo.is-locked .mm-geo__rect {
+  cursor: default;
+  fill-opacity: 0.07;
+  stroke-dasharray: 5 3;
+  stroke-opacity: 0.7;
+}
+.mm-geo__lock {
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.55;
+}
+.mm-geo__lock:hover { opacity: 1; }
+.mm-geo.is-locked .mm-geo__lock { opacity: 0.85; }
+/*  the loud "click to edit" pill on a SELECTED locked shape — so it's obvious the shape is held, not broken */
+.mm-geo__unlock-pill { cursor: pointer; }
+.mm-geo__unlock-pill rect {
+  fill: var(--panel, #1e293b);
+  stroke: var(--accent, #6366f1);
+  stroke-width: 1.5;
+  fill-opacity: 0.96;
+}
+.mm-geo__unlock-pill text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--accent, #6366f1);
+  user-select: none;
+  pointer-events: none;
+}
+.mm-geo__unlock-pill:hover rect { fill: var(--accent, #6366f1); }
+.mm-geo__unlock-pill:hover text { fill: #fff; }
+/* reference frame: the focused node's real plate shape as a dim, non-interactive backdrop */
+/* (Slice B) THE KIND COLOUR GRAMMAR — one source of truth for every layer's colour:
+   land = blue · building = green · floor = yellow · unit = light purple. Applied to the ancestor stack, the
+   focused node's own plate, and unit box accents, so a glance tells you which layer is which. */
+:root {
+  --mm-kind-land: #60a5fa;      /* blue — brightened from #3b82f6 (: too dark to see the land line) */
+  --mm-kind-building: #22c55e;  /* green */
+  --mm-kind-floor: #eab308;     /* yellow */
+  --mm-kind-unit: #c4b5fd;      /* light purple */
+}
+
+/* (Slice B) the FOCUSED node's own plate = the ACTIVE "this level" shape, coloured by its kind. A filled
+   tint + a solid stroke so it stands out clearly from the dim ancestor CONTEXT behind it (see-all-layers). */
+.mm-canvas__refframe {
+  fill: none;
+  stroke-width: 2.25;
+  stroke-opacity: 0.95;
+}
+.mm-refframe--land    { stroke: var(--mm-kind-land);     fill: var(--mm-kind-land);     fill-opacity: 0.05; }
+.mm-refframe--building{ stroke: var(--mm-kind-building); fill: var(--mm-kind-building); fill-opacity: 0.05; }
+.mm-refframe--floor   { stroke: var(--mm-kind-floor);    fill: var(--mm-kind-floor);    fill-opacity: 0.05; }
+.mm-refframe--unit    { stroke: var(--mm-kind-unit);     fill: var(--mm-kind-unit);     fill-opacity: 0.06; }
+/* (spine) the focused node's own shape when SELECTED reads bolder; its vertices are draggable when unlocked. */
+.mm-canvas__self.is-selected .mm-canvas__refframe { stroke-width: 3; fill-opacity: 0.1; }
+.mm-self__vert {
+  fill: var(--panel, #0f172a);
+  stroke: var(--ink, #e2e8f0);
+  stroke-width: 2;
+  cursor: grab;
+}
+.mm-self__vert:hover { fill: var(--accent, #6366f1); }
+/*  edge-midpoint add-a-point handle on the FOCUSED-node editor — mirrors.mm-poly__edge so the two poly
+   editors share the same affordance (click an edge to add a vertex). */
+.mm-self__edge {
+  fill: var(--accent, #6366f1);
+  fill-opacity: 0.5;
+  stroke: #fff;
+  stroke-width: 1;
+  cursor: copy;
+}
+.mm-self__edge:hover { fill-opacity: 0.95; }
+/* (parked item 1) per-edge metre-length labels while editing a shape. Kind-coloured text with a bg halo
+ (paint-order: stroke the bg underneath so the number stays legible over any ancestor backdrop — the
+   legend legibility pattern). pointer-events none so labels never steal clicks from vertices/edges. */
+.mm-self__edgelen {
+  font-size: 10px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--bg, #0b1220);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+  user-select: none;
+}
+.mm-self__edgelen--land     { fill: var(--mm-kind-land); }
+.mm-self__edgelen--building { fill: var(--mm-kind-building); }
+.mm-self__edgelen--floor    { fill: var(--mm-kind-floor); }
+.mm-self__edgelen--unit     { fill: var(--mm-kind-unit); }
+
+/* (Slice B) the CUMULATIVE ANCESTOR STACK — each ancestor drawn dim + locked + kind-coloured, framing the
+   focused node. Dashed edge + faint fill so it reads as "context, not editable"; the tag names the layer. */
+.mm-anc__poly {
+  fill-opacity: 0.06;
+  stroke-width: 1.6;
+  stroke-dasharray: 7 5;
+  stroke-opacity: 0.72; /* : was 0.5 — a backdrop land line was too faint to see; lift it (still dashed = reads as context) */
+}
+.mm-anc__tag { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; fill-opacity: 0.75; }
+.mm-anc--land    .mm-anc__poly { fill: var(--mm-kind-land);     stroke: var(--mm-kind-land); }
+.mm-anc--land    .mm-anc__tag  { fill: var(--mm-kind-land); }
+.mm-anc--building .mm-anc__poly{ fill: var(--mm-kind-building); stroke: var(--mm-kind-building); }
+.mm-anc--building .mm-anc__tag { fill: var(--mm-kind-building); }
+.mm-anc--floor   .mm-anc__poly { fill: var(--mm-kind-floor);    stroke: var(--mm-kind-floor); }
+.mm-anc--floor   .mm-anc__tag  { fill: var(--mm-kind-floor); }
+.mm-anc--unit    .mm-anc__poly { fill: var(--mm-kind-unit);     stroke: var(--mm-kind-unit); }
+.mm-anc--unit    .mm-anc__tag  { fill: var(--mm-kind-unit); }
+/* (slice 5) plan DETAILING — door/window/wall marker symbols + the pick-a-tool bar */
+.mm-mark { cursor: pointer; }
+.mm-mark__wall { stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.mm-mark__end { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+.mm-mark__swing { fill: none; stroke: var(--accent, #6366f1); stroke-width: 1.5; stroke-opacity: 0.8; }
+.mm-mark__dot { fill: var(--accent, #6366f1); }
+.mm-mark__win { stroke: #38bdf8; stroke-width: 2.5; stroke-linecap: round; }
+.mm-mark:hover .mm-mark__swing,
+.mm-mark:hover .mm-mark__win,
+.mm-mark:hover .mm-mark__wall { stroke: var(--err, #ef4444); }
+.mm-marker-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.mm-marker-bar__label { color: var(--ink); font-weight: 600; }
+.mm-marker-bar__hint { color: var(--ink-dim); }
+.mm-marker-tool {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  padding: 3px 9px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.mm-marker-tool.is-on { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); color: #fff; }
+.mm-link-btn { background: none; border: none; color: var(--accent-ink, #818cf8); cursor: pointer; padding: 0; font-size: 12px; }
+/* inspector lock button */
+.mm-lock-btn { width: 100%; }
+.mm-lock-btn.is-locked {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  background: color-mix(in srgb, #38bdf8 12%, var(--panel));
+}
+/* facing arrow: a draggable orientation vector from a node's centre. Set = solid accent; unset = faint. */
+.mm-geo__facing-shaft {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.mm-geo__facing-head { fill: var(--accent); }
+.mm-geo__facing-label {
+  font-size: 10px;
+  fill: var(--accent);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 3;
+  user-select: none;
+}
+.mm-geo__facing.is-unset .mm-geo__facing-shaft,
+.mm-geo__facing.is-unset .mm-geo__facing-head { opacity: 0.35; }
+.mm-geo__facing-grip {
+  fill: var(--accent);
+  fill-opacity: 0.001; /* invisible but hit-testable */
+  cursor: grab;
+}
+.mm-geo__facing-grip:hover { fill-opacity: 0.25; }
+/*  rotate knob — a dial around a placed unit's centre */
+.mm-geo__rotate-ring {
+  fill: none;
+  stroke: var(--mm-kind-unit, #b39ddb);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  opacity: 0.5;
+}
+.mm-geo__rotate-knob {
+  fill: var(--mm-kind-unit, #b39ddb);
+  stroke: var(--panel);
+  stroke-width: 1.5;
+  cursor: grab;
+}
+.mm-geo__rotate-knob:hover { fill: var(--accent); }
+.mm-geo__rotate-label {
+  font-size: 10px;
+  fill: var(--mm-kind-unit, #b39ddb);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 3;
+  user-select: none;
+}
+.mm-geo__poslock { font-size: 12px; user-select: none; }
+/* inspector facing control */
+.mm-facing-quick { display: flex; gap: 6px; margin-bottom: 6px; }
+.mm-facing-q { flex: 1; padding: 4px 0; }
+.mm-facing-q.is-on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+}
+.mm-btn--mini { padding: 2px 8px; font-size: 11px; }
+/* camera / frustum: a view-cone + pin + aim handle drawn inside a room node */
+.mm-geo__cam-cone {
+  fill: var(--accent);
+  fill-opacity: 0.14;
+  stroke: var(--accent);
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+}
+.mm-geo__cam-ray { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 3 2; stroke-opacity: 0.8; }
+.mm-geo__cam-pin { fill: var(--accent); stroke: var(--panel); stroke-width: 1.5; }
+.mm-geo__cam.is-live .mm-geo__cam-cone { fill-opacity: 0.22; }
+.mm-geo__cam-grip { fill: var(--accent); fill-opacity: 0.001; cursor: grab; }
+.mm-geo__cam-grip:hover { fill-opacity: 0.3; }
+.mm-geo__cam-aim { fill: var(--panel); stroke: var(--accent); stroke-width: 2; cursor: grab; }
+.mm-geo__cam-aim:hover { fill: var(--accent); }
+/* polygon editing handles (illustration-grade dimensioned footprints) */
+.mm-poly__vert {
+  fill: #fff;
+  stroke: var(--accent);
+  stroke-width: 2;
+  cursor: grab;
+}
+.mm-poly__vert.is-frozen {
+  fill: #38bdf8;
+  stroke: #0369a1;
+}
+.mm-poly__edge {
+  fill: var(--accent);
+  fill-opacity: 0.5;
+  stroke: #fff;
+  stroke-width: 1;
+  cursor: copy;
+}
+.mm-poly__edge.is-frozen {
+  fill: #38bdf8;
+  fill-opacity: 0.9;
+}
+/* per-edge length list in the inspector */
+.mm-edge-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.mm-edge-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.mm-edge-row__n { width: 44px; color: var(--ink-dim); }
+.mm-edge-row__len { width: 64px; }
+.mm-edge-row__unit { color: var(--ink-dim); }
+.mm-edge-row__link { font-size: 11px; color: var(--accent); }
+.mm-edge-row__freeze {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line, #d4d4d8);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink-dim);
+}
+.mm-edge-row__freeze.is-frozen { color: #38bdf8; border-color: #38bdf8; }
+.mm-canvas__hint {
+  font-size: 11px;
+  color: var(--ink-dim);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mm-snap-toggle {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.mm-snap-toggle.is-on { color: var(--accent); border-color: var(--accent); }
+
+/* floor roll-up legend (read availability at a glance, §4b) */
+.mm-floor-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+.mm-floor-legend__head { color: var(--ink); }
+.mm-floor-legend__total { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+/* (#4) level-isolation indicator — shown when stacked siblings are hidden to edit one level */
+.mm-canvas__isolate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: var(--accent-weak, rgba(99, 102, 241, 0.12));
+  border: 1px solid var(--accent, #6366f1);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--ink);
+}
+.mm-floor-legend__row { display: flex; flex-wrap: wrap; gap: 10px; }
+.mm-floor-legend__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-dim);
+  font-size: 11px;
+}
+.mm-floor-legend__sw {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* colour-grammar legend — decode land/building/floor/unit by colour (-polish) */
+.mm-kind-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 5px 10px;
+  margin-bottom: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 11px;
+}
+.mm-kind-legend__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-dim);
+}
+.mm-kind-legend__sw {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* furniture props — schematic icon + caption at unit zoom (§6a; props are data, not meshes) */
+.mm-prop { cursor: move; }
+.mm-prop__box {
+  fill: #a855f7;
+  fill-opacity: 0.08;
+  stroke: #a855f7;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+}
+.mm-geo.is-selected .mm-prop__box { stroke-opacity: 1; stroke-width: 1.5; }
+.mm-prop__glyph {
+  fill: none;
+  stroke: #7c3aed;
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.mm-prop__cap {
+  font-size: 9.5px;
+  fill: var(--ink-dim);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* breadcrumb (zoom levels) */
+.mm-crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.mm-crumb {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.mm-crumb:hover { background: var(--accent-weak); }
+.mm-crumb.is-here { color: var(--ink); font-weight: 700; cursor: default; }
+.mm-crumb-arrow { color: var(--ink-dim); font-size: 12px; }
+
+.mm-canvas-empty {
+  max-width: 460px;
+  margin: 60px auto;
+  text-align: center;
+  color: var(--ink-dim);
+}
+.mm-canvas-empty p { margin: 12px 0 22px; line-height: 1.6; }
+
+/* ---- Studio inspector (reuses .mm-rail shell) ---- */
+.mm-geo-name {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 7px 9px;
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 600;
+}
+.mm-geo-inspect {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mm-ins-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.mm-ins-sec:last-child { border-bottom: 0; }
+.mm-ins-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+}
+.mm-ins-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+}
+.mm-ins-row strong { font-size: 15px; }
+.mm-ins-row--dim { font-size: 12px; color: var(--ink-dim); }
+.mm-ins-hint { font-size: 11px; color: var(--ink-dim); }
+/* (slice 3) lock-first nudge on an unlocked floor that already holds units — warn, don't block */
+.mm-ins-nudge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink);
+  padding: 9px 11px;
+  background: var(--warn-weak, rgba(234, 179, 8, 0.12));
+  border: 1px solid var(--warn, #eab308);
+  border-radius: var(--radius);
+}
+/* (slice B) LAND-SIZE HUD — target (deed) vs drawn area, colour-cued by how close they are. */
+.mm-land-hud {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mm-land-hud.is-ok { border-color: #22c55e; background: rgba(34, 197, 94, 0.08); }
+.mm-land-hud.is-warn { border-color: #eab308; background: rgba(234, 179, 8, 0.10); }
+.mm-land-hud.is-off { border-color: #ef4444; background: rgba(239, 68, 68, 0.09); }
+.mm-land-hud__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted, var(--ink));
+}
+.mm-land-hud__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mm-land-hud__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink);
+}
+.mm-land-hud__row strong { font-variant-numeric: tabular-nums; }
+.mm-land-hud__row--delta {
+  padding-top: 4px;
+  border-top: 1px dashed var(--line-strong);
+}
+.mm-land-hud__bar {
+  font-size: 11px;
+  font-weight: 600;
+}
+.mm-land-hud.is-ok .mm-land-hud__bar { color: #16a34a; }
+.mm-land-hud.is-warn .mm-land-hud__bar { color: #b45309; }
+.mm-land-hud.is-off .mm-land-hud__bar { color: #dc2626; }
+
+.mm-ins-pair {
+  display: flex;
+  gap: 8px;
+}
+.mm-ins-pair label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.mm-ins-single {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.mm-geo-inspect input,
+.mm-geo-inspect select {
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: var(--bg);
+  color: var(--ink);
+  width: 100%;
+}
+.mm-ins-pair input { flex: 1; }
+.mm-ins-actions { gap: 8px; }
+.mm-ins-actions .mm-btn { width: 100%; }
+
+/* marketing images (MediaCard) */
+.mm-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.mm-media-tile {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.mm-media-thumb {
+  position: relative;
+  width: 100%;
+  background: #0b1220;
+}
+.mm-media-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mm-media-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+.mm-media-meta {
+  padding: 8px 9px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mm-media-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* PREVIEW face — the real VRX developer view of the pack */
+.mm-main--preview { overflow-y: auto; grid-column: 3 / -1; } /* span the (now empty) rail-splitter + rail tracks */
+.mm-preview {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 28px 60px;
+}
+.mm-preview__banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--accent-weak, #0d948820);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+.mm-preview__eye { font-size: 16px; }
+.mm-preview__head { margin-bottom: 16px; }
+.mm-preview__title h1 { margin: 0; font-size: 28px; font-weight: 800; color: var(--ink); }
+.mm-preview__tagline { margin: 4px 0 0; font-size: 15px; color: var(--ink-dim); }
+.mm-preview__meta { margin: 6px 0 0; font-size: 13px; color: var(--ink-dim); }
+.mm-preview__hero { margin-bottom: 20px; border-radius: 12px; overflow: hidden; }
+.mm-preview__specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.mm-preview__spec {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 11px;
+}
+.mm-preview__spec-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+.mm-preview__spec-value { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+.mm-preview__amenities { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 22px; }
+.mm-preview__chip {
+  font-size: 12px;
+  color: var(--ink-dim);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
+.mm-preview__detail { max-width: 760px; }
+.mm-preview__detail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.mm-preview__detail-title { font-size: 21px; font-weight: 800; color: var(--ink); }
+.mm-preview__detail-sub { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+.mm-preview__status { font-size: 13px; font-weight: 700; color: #22c55e; }
+.mm-preview__price { font-size: 26px; font-weight: 800; color: var(--ink); margin-top: 10px; }
+.mm-preview__terms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.mm-preview__term {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.mm-preview__term span { color: var(--ink-dim); }
+.mm-preview__term strong { color: var(--ink); }
+
+/* (The cross-shell floating route-NAV was REMOVED (D-): the frame's face switch
+ * [Structured|Studio|Preview] is the only navigation now, and the from-scratch AI generator is reached via the
+ * quiet ".mm-frame__aidoor" link in the frame. The former .mm-nav* rules went with Nav.tsx.)
+ * (The /manage route was retired — its reuse surface moved into the "Reuse ▾" menu on the Build canvas.
+ * The former .mm-manage* rules were removed with it.) */

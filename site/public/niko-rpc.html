@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>NEAR testnet RPC — setup brief</title>
+<style>
+  :root { --ink:#1a1f2b; --muted:#5b6475; --line:#e4e7ee; --accent:#2f7d5b; --code-bg:#0f1420; --code-ink:#d7e2f0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f8fa; color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width:820px; margin:0 auto; padding:40px 22px 90px; }
+  h1 { font-size:27px; line-height:1.25; margin:0 0 6px; }
+  h2 { font-size:20px; margin:38px 0 12px; padding-top:18px; border-top:1px solid var(--line); }
+  h3 { font-size:16.5px; margin:24px 0 8px; }
+  p, li { color:var(--ink); }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 26px; }
+  blockquote { margin:0 0 22px; padding:14px 18px; background:#eef3f0; border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0; color:#2a3340; font-size:14.5px; }
+  blockquote p { margin:0 0 10px; } blockquote p:last-child { margin:0; }
+  code { background:#eceff4; padding:1px 5px; border-radius:4px; font-size:13.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  pre { background:var(--code-bg); color:var(--code-ink); padding:15px 17px; border-radius:9px;
+    overflow-x:auto; font-size:13px; line-height:1.5; margin:0 0 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  pre code { background:none; padding:0; color:inherit; font-size:inherit; }
+  table { border-collapse:collapse; width:100%; margin:0 0 18px; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top; }
+  th { background:#eef1f6; }
+  ul, ol { padding-left:22px; } li { margin:4px 0; }
+  a { color:var(--accent); }
+  .warn { color:#8a5300; }
+  hr { border:none; border-top:1px solid var(--line); margin:34px 0; }
+  .tag { display:inline-block; background:#e7efe9; color:var(--accent); border-radius:20px;
+    padding:2px 11px; font-size:12px; font-weight:600; letter-spacing:.3px; }
+  footer { margin-top:50px; color:var(--muted); font-size:13px; border-top:1px solid var(--line); padding-top:16px; }
+</style>
+</head>
+<body>
+<main>
+
+<span class="tag">SETUP BRIEF · v1</span>
+<h1>NEAR testnet RPC — standalone setup brief for an AI agent</h1>
+<p class="sub">For an AI coding agent (Claude Opus) operating on Niko's server. Updated 2026-11-17.
+Unlisted page — not linked from anywhere; kept current only if issues surface.</p>
+
+<blockquote>
+  <p><strong>Who this is for.</strong> You are an AI coding agent (Claude Opus) operating on Niko's server.
+  You have no prior context about the project that requested this — you don't need any. Your whole job is to
+  stand up a <strong>NEAR <em>testnet</em> RPC endpoint</strong> on this machine and report back the facts
+  listed at the bottom. Treat this page as your complete instructions.</p>
+  <p><strong>Posture.</strong> Be careful and non-destructive. This is someone else's server. Do not remove
+  packages, reconfigure firewalls beyond the one port named here, or touch unrelated services. If a step is
+  ambiguous or a prerequisite is missing, STOP and say so in the report rather than guessing. Nothing here is
+  irreversible if you follow it; keep it that way.</p>
+</blockquote>
+
+<h2>0. Why (one paragraph, so you can make good calls)</h2>
+<p>The requesting team runs a web app that makes <strong>read-only</strong> NEAR calls on <strong>testnet</strong>
+— mostly <code>query</code> / <code>call_function</code> (contract view methods) and <code>block</code> (chain
+head). They currently use a third-party hosted RPC that has per-request credit limits and rate limits, which
+keep running out. A self-hosted testnet RPC on your server removes that cost/limit wall. You are standing up
+that endpoint. The app will be pointed at it later <strong>by the requesting team</strong>, not by you — you do
+not need to touch their app.</p>
+<p><strong>Network: <code>testnet</code> only.</strong> Not mainnet. All sizing and endpoints below are for testnet.</p>
+
+<h2>1. Pick the flavor (your call — report which you chose and why)</h2>
+<p>There are two ways to serve testnet RPC. Assess this server's real resources (CPU, RAM, free disk, whether
+Docker is available) and choose the one it can actually sustain. <strong>Report which you picked.</strong></p>
+
+<h3>Option A — read-only RPC (<code>read-rpc</code> + <code>near-lake</code>) — lightest, preferred if viable</h3>
+<p>NEAR's <a href="https://github.com/near/read-rpc">read-rpc</a> serves exactly the read methods this app needs
+(<code>query</code>, <code>call_function</code>, <code>view</code>, <code>block</code>) by reading block data
+from NEAR's public S3 lake instead of validating the chain itself. No block production, no validation — cheapest
+to run and keep alive.</p>
+<ul>
+  <li>Rough testnet sizing: <strong>~8 vCPU / 16–32 GB RAM / 500 GB–1 TB NVMe SSD.</strong></li>
+  <li>It needs an S3-reader config pointed at NEAR's public testnet lake bucket (the repo's README has the current
+    bucket + region) and a local datastore (per the repo's deploy docs).</li>
+  <li>Better fit <strong>if</strong> the server has the disk and you can bring up its datastore cleanly.</li>
+</ul>
+
+<h3>Option B — full <code>neard</code> node in <code>--rpc</code> mode — heavier, more robust</h3>
+<p>A full <a href="https://github.com/near/nearcore">nearcore</a> <code>neard</code> node configured as a
+non-validating RPC node: it syncs the testnet chain itself and serves all RPC methods. No S3/lake dependency.</p>
+<ul>
+  <li>Heavier: initial sync takes time and disk; testnet state + recent history is the main cost.</li>
+  <li>Rough testnet sizing: <strong>≥8 vCPU / 32 GB RAM / 1 TB+ NVMe SSD</strong> (sync headroom).</li>
+  <li>Use <code>neard init --chain-id testnet</code>, then run with RPC enabled; download a recent
+    <strong>testnet snapshot</strong> (NEAR publishes these) so you don't sync from genesis.</li>
+</ul>
+
+<blockquote><p>If the server clearly can't host either comfortably, <strong>do not force it</strong> — report the
+constraint (what's missing: disk? RAM? Docker?) and stop. A half-synced or OOM-looping node is worse than none.</p></blockquote>
+
+<h2>2. Requirements for the endpoint (both options must meet these)</h2>
+<p>Whichever you choose, the finished endpoint MUST satisfy all of these — the requesting app depends on them.</p>
+
+<p><strong>1. Serves testnet reads over HTTP JSON-RPC.</strong> It must answer a standard NEAR JSON-RPC POST.
+Two smoke tests you must run and paste the output of (replace <code>&lt;RPC_URL&gt;</code> with your endpoint):</p>
+<pre><code># (a) chain head — proves liveness
+curl -s -X POST &lt;RPC_URL&gt; -H 'Content-Type: application/json' -d '{
+  "jsonrpc":"2.0","id":"1","method":"block","params":{"finality":"final"}}' | head -c 400
+
+# (b) a contract view call — proves it serves the reads the app makes
+curl -s -X POST &lt;RPC_URL&gt; -H 'Content-Type: application/json' -d '{
+  "jsonrpc":"2.0","id":"2","method":"query","params":{
+    "request_type":"call_function",
+    "finality":"final",
+    "account_id":"guest-book.testnet",
+    "method_name":"getMessages",
+    "args_base64":"e30="}}' | head -c 400</code></pre>
+<p>Test (a) must return a block with a recent <code>height</code>. Test (b) must return a <code>result</code>
+(any SuccessValue is fine — it proves <code>call_function</code> works; <code>guest-book.testnet</code> is a
+well-known public testnet contract used only as a liveness probe).</p>
+
+<p><strong>2. CORS.</strong> The app calls this server-side (not from a browser), so CORS is not strictly
+required — but if it's trivial to allow <code>*</code> on the RPC path, do. Report whether CORS headers are set.</p>
+
+<p><strong>3. Archival reads (IMPORTANT — report explicitly whether you provide this).</strong> The app has a
+component that reads <strong>older</strong> transactions via <code>EXPERIMENTAL_tx_status</code> / historical
+<code>block</code> queries. A normal (non-archival) node returns timeouts / <code>UNKNOWN_BLOCK</code> for aged
+data. State whether your endpoint serves archival history:</p>
+<ul>
+  <li>Option A (read-rpc) reads from the lake → generally archival-capable; confirm with an old-block query.</li>
+  <li>Option B (neard) is archival <strong>only if</strong> configured with <code>archive: true</code> (heavier
+    disk). If you run a non-archival neard, say so — the team will keep a separate archival fallback for that one path.</li>
+</ul>
+<p>Archival smoke test (query a deliberately old block height, e.g. a few million below head):</p>
+<pre><code>curl -s -X POST &lt;ARCHIVAL_RPC_URL&gt; -H 'Content-Type: application/json' -d '{
+  "jsonrpc":"2.0","id":"3","method":"block","params":{"block_id":&lt;OLD_HEIGHT&gt;}}' | head -c 300</code></pre>
+<p>If it returns the old block → archival works. If <code>UNKNOWN_BLOCK</code> → not archival (report it).</p>
+
+<p><strong>4. Stable URL + port.</strong> Expose it on a predictable host:port (or a path behind a reverse proxy).
+Open <strong>only</strong> that one port in the firewall if needed. Report the exact <code>&lt;RPC_URL&gt;</code>
+the team should use.</p>
+
+<p><strong>5. Survives a reboot.</strong> Run it under a process supervisor (systemd service or a Docker container
+with <code>--restart=unless-stopped</code>) so it comes back after a restart. Report the control commands below.</p>
+
+<h2>3. Control surface (so the team can operate it without you)</h2>
+<p>Set it up so these are one-liners, and <strong>report the exact commands for THIS server</strong>:</p>
+<ul>
+  <li><strong>Is it up?</strong> — the health command (the <code>curl</code> smoke test from §2.1, or
+    <code>systemctl status &lt;svc&gt;</code>, or <code>docker ps | grep &lt;name&gt;</code>).</li>
+  <li><strong>Restart / stop / start</strong> — the exact commands (<code>systemctl restart &lt;svc&gt;</code>
+    or <code>docker restart &lt;name&gt;</code>).</li>
+  <li><strong>Logs</strong> — where they are and how to tail them (<code>journalctl -u &lt;svc&gt; -f</code> or
+    <code>docker logs -f &lt;name&gt;</code>).</li>
+  <li><strong>Sync / health status</strong> — for Option B, how to check sync progress (the <code>status</code>
+    method shows <code>sync_info.syncing</code> + <code>latest_block_height</code>). For Option A, how to see
+    it's keeping up with head.</li>
+  <li><strong>Disk watch</strong> — which directory holds the data and how to check its size (archival/full nodes grow).</li>
+</ul>
+
+<h2>4. ⚠️ The report you must return (this is the deliverable)</h2>
+<p>When done — or when you hit a blocker — produce a single markdown report with <strong>exactly</strong> these
+fields. This is what the requesting team reads to wire the app and to operate the node. Be precise; paste real
+command output, not paraphrase.</p>
+<pre><code>## NEAR testnet RPC — status report
+
+- STATUS:              up | partially up | blocked
+- FLAVOR:              read-rpc (Option A) | neard --rpc (Option B)   + one line why
+- RPC_URL:             &lt;the exact URL the app should POST to&gt;
+- ARCHIVAL:            yes — ARCHIVAL_RPC_URL: &lt;url&gt;   |   no (non-archival) — reason
+- CORS:                allowed (*) | not set | n/a (server-side only)
+- LIVENESS PROOF:      &lt;paste the §2.1(a) block response — must show a recent height&gt;
+- VIEW-CALL PROOF:     &lt;paste the §2.1(b) query response — must show a result&gt;
+- ARCHIVAL PROOF:      &lt;paste the §2.3 old-block response, or the UNKNOWN_BLOCK if not archival&gt;
+- HEAD HEIGHT NOW:     &lt;current latest_block_height&gt;
+- CONTROL — is-up:     &lt;command&gt;
+- CONTROL — restart:   &lt;command&gt;
+- CONTROL — logs:      &lt;command&gt;
+- CONTROL — sync/health: &lt;command + what a healthy reading looks like&gt;
+- DATA DIR + SIZE:     &lt;path&gt; — &lt;current size&gt; (archival grows; watch disk)
+- SERVER SPECS:        &lt;vCPU / RAM / free disk you actually have&gt;
+- SUPERVISOR:          systemd unit &lt;name&gt; | docker container &lt;name&gt; (restart policy)
+- BLOCKERS / CAVEATS:  &lt;anything missing, flaky, or that needs the team's decision&gt;
+- UPTIME EXPECTATION:  &lt;will this survive reboot? any manual step after reboot?&gt;</code></pre>
+
+<h3>Why these exact fields</h3>
+<ul>
+  <li><code>RPC_URL</code> + <code>ARCHIVAL_RPC_URL</code> are the two values the team drops into the app's
+    config to cut over.</li>
+  <li><code>LIVENESS</code> / <code>VIEW-CALL</code> / <code>ARCHIVAL PROOF</code> + <code>HEAD HEIGHT</code>
+    let the team confirm it's genuinely serving the right network and methods before relying on it — not just
+    "the process is running".</li>
+  <li>The <code>CONTROL —</code> lines are how the team checks it's up and controls it afterward, without you.</li>
+  <li><code>BLOCKERS / CAVEATS</code> is where you're honest about anything you faked, skipped, or couldn't verify.</li>
+</ul>
+
+<h2>5. Hand the report back</h2>
+<p>Return the filled-in report from §4 as your final message. If anything in §2 couldn't be met, say which and
+why in <code>BLOCKERS</code> — a partial, honest result is more useful than a confident-but-wrong "it works".</p>
+
+<footer>Maintained by the requesting team. This page is unlisted and updated only if issues surface. v1 · 2026-11-17.</footer>
+
+</main>
+</body>
+</html>

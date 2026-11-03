@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="VRX">
+  <!-- VRX brand mark (simple tier): flat-top black hexagon, purple V with rounded node tips, a sealed-node
+       dot at the top-left vertex. Crisp at any size (favicon / PWA / in-app header). The FULL BTC-sealed
+       variant (ring = seal TXID + timestamp) lives in vrx-mark-sealed.svg for large/hero contexts.
+       S215: whole mark grown 12% about centre (Franc); the V dropped ~8% of the canvas so it sits
+       visually centred. NOTE: this static file is correct for favicon/PWA/<img>; the IN-APP header plays
+       the alien-circle animation via the inline VrxLogoMark component (SMIL doesn't run inside <img>). -->
+  <defs>
+    <linearGradient id="vrxV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+  <!-- Grow the entire mark 12% about the canvas centre. -->
+  <g transform="translate(256 256) scale(1.12) translate(-256 -256)">
+    <!-- Flat-top hexagon, circumradius 210, centred (256,256). Vertices at 0/60/120/180/240/300 deg.
+         Light outline so the black hexagon stays visible on dark backgrounds (matches Franc's reference). -->
+    <polygon points="466,256 361,437.9 151,437.9 46,256 151,74.1 361,74.1"
+             fill="#0a0a0a" stroke="#f4f4f5" stroke-width="16" stroke-linejoin="round"/>
+    <!-- Sealed-node dot at the top-left hexagon vertex (the "home" the circles fly back to). -->
+    <circle cx="151" cy="74.1" r="30" fill="#0a0a0a" stroke="#f4f4f5" stroke-width="7"/>
+    <!-- The V + its node tips, dropped 41px (~8% of 512) so the V reads as vertically centred. -->
+    <g transform="translate(0 41)">
+      <!-- The V: two strokes meeting at the bottom; rounded caps read as the node tips at the top. -->
+      <path d="M176 158 L256 330 L336 158"
+            fill="none" stroke="url(#vrxV)" stroke-width="54"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Node tips on the two top arms of the V ("the two circles above the V"). -->
+      <circle cx="176" cy="158" r="30" fill="#7c3aed"/>
+      <circle cx="336" cy="158" r="30" fill="#7c3aed"/>
+    </g>
+  </g>
+</svg>

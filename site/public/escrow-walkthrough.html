@@ -1,0 +1,237 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>VRX — Buying a home with escrow protection (walkthrough)</title>
+<style>
+  :root{
+    --bg:#05070c; --panel:#0b0f17; --panel2:#0e131d; --border:#1b2432; --border-soft:#141b26;
+    --text:#e8eef7; --dim:#a7b3c4; --faint:#67748a; --vetted:#38d39f; --hold:#e8b84b; --danger:#ff6b6b;
+    --accent:#5b9bff; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:
+      radial-gradient(1100px 520px at 50% -4%, rgba(56,211,159,0.06), transparent 60%), var(--bg);
+    color:var(--text); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:0;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:28px 14px 80px}
+  @media (max-width:520px){ .wrap{padding:20px 10px 64px} }
+  header.top{margin-bottom:26px}
+  .seal{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;
+    font-weight:600;color:#07140d;background:var(--vetted);letter-spacing:.3px}
+  .kicker{font-size:11.5px;color:var(--faint);letter-spacing:.7px;text-transform:uppercase;margin:12px 0 6px;font-weight:600}
+  h1{font-size:28px;line-height:1.14;margin:4px 0 10px;letter-spacing:-.5px;font-weight:700}
+  @media (max-width:520px){ h1{font-size:23px} }
+  .lede{color:var(--dim);font-size:15.5px;margin:0 0 18px;max-width:62ch}
+  .meta{color:var(--faint);font-size:12.5px;margin:0 0 4px}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 4px}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--dim);
+    background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:5px 11px}
+  .chip b{color:var(--text);font-weight:600}
+  .divider{height:1px;background:var(--border-soft);margin:26px 0}
+
+  .step{margin:30px 0;border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
+  .step-head{padding:16px 16px 4px}
+  .step-no{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;
+    background:var(--vetted);color:#07140d;font-weight:700;font-size:13px;margin-right:9px;vertical-align:middle}
+  .step-side{float:right;font-size:11px;font-weight:600;letter-spacing:.3px;padding:3px 9px;border-radius:999px;
+    text-transform:uppercase}
+  .side-mobile{color:var(--accent);border:1px solid var(--accent);background:rgba(91,155,255,.08)}
+  .side-desk{color:var(--hold);border:1px solid var(--hold);background:rgba(232,184,75,.08)}
+  .step-title{font-size:17px;font-weight:650;margin:2px 0 6px;letter-spacing:-.2px}
+  .step-body{padding:0 16px 14px;color:var(--dim);font-size:14.5px}
+  .step-body p{margin:8px 0}
+  .step-body strong{color:var(--text)}
+  .shot{background:var(--panel2);border-top:1px solid var(--border-soft);padding:14px}
+  /* tall mobile screenshots: show FULLY, never cropped; cap width so phone shots look like a phone */
+  .shot img{display:block;margin:0 auto;border-radius:12px;border:1px solid var(--border);
+    max-width:100%;height:auto}
+  .shot.phone img{max-width:340px}
+  .shot.laptop img{max-width:100%}
+  .cap{color:var(--faint);font-size:12px;text-align:center;margin:10px auto 0;max-width:52ch}
+
+  .callout{border-left:3px solid var(--vetted);background:rgba(56,211,159,.05);padding:12px 14px;border-radius:0 10px 10px 0;margin:12px 0}
+  .callout.warn{border-left-color:var(--hold);background:rgba(232,184,75,.05)}
+  .callout b{color:var(--text)}
+  .fork{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  @media (max-width:520px){ .fork{grid-template-columns:1fr} }
+  .fork .opt{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--panel2)}
+  .fork .opt h4{margin:0 0 4px;font-size:14px}
+  .fork .veto h4{color:var(--danger)} .fork .waive h4{color:var(--vetted)}
+  .fork .opt p{margin:0;font-size:13px;color:var(--dim)}
+  footer{margin-top:40px;color:var(--faint);font-size:12.5px;text-align:center;line-height:1.7}
+  .badge-inline{color:var(--vetted);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="seal">✓ Vetted</span>
+    <div class="kicker">VRX · How a purchase works</div>
+    <h1>Buying a home — protected by escrow, end&nbsp;to&nbsp;end.</h1>
+    <p class="lede">A real walkthrough of a buyer reserving a unit and paying a deposit on VRX — with the deposit
+      held safely in <b style="color:var(--vetted)">escrow</b> until the deal goes ahead. Every screen below is the
+      live app: the buyer on a <b style="color:var(--accent)">phone</b>, the sales desk on a
+      <b style="color:var(--hold)">laptop</b>.</p>
+    <p class="meta">Development shown: <b>Miracle Tower</b>, Central Pattaya · 476 units · completed 2018.</p>
+    <div class="legend">
+      <span class="chip"><b style="color:var(--accent)">●</b> <b>Buyer</b> — mobile</span>
+      <span class="chip"><b style="color:var(--hold)">●</b> <b>Sales desk</b> — laptop</span>
+      <span class="chip">🛡 <b>Escrow-protected</b> — the deposit is held by VRX, not the developer</span>
+    </div>
+  </header>
+
+  <div class="callout">
+    <b>What “escrow” means here.</b> When the buyer pays their reservation deposit, the money does <b>not</b> go
+    straight to the developer — it is held in a neutral VRX escrow account. It is released to the developer only once
+    the deal is proceeding. If the deal falls through within the protection window, the buyer gets the deposit back.
+    It’s a VRX platform guarantee on <b>every</b> reservation — a developer can’t switch it off.
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 1 -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">1</span>Browse vetted developments</div></div>
+    <div class="step-body"><p>The buyer opens VRX and sees a curated list of vetted developments. They’re
+      <strong>cleared to make an offer</strong> and their $VRX wallet is funded — shown top-right.</p></div>
+    <div class="shot phone"><img src="manual-screenshots/01-buyer-home-mobile.webp" alt="Buyer home — developments list" loading="lazy">
+      <div class="cap">The buyer’s home: vetted developments, a funded wallet, ready to make an offer.</div></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">2</span>Open a development</div></div>
+    <div class="step-body"><p>Tapping <strong>Miracle Tower</strong> opens its page — photos, price range, size,
+      status and amenities. Exact units and prices stay private until the buyer talks to the desk.</p></div>
+    <div class="shot phone"><img src="manual-screenshots/02-buyer-building-detail-mobile.webp" alt="Miracle Tower detail" loading="lazy">
+      <div class="cap">Miracle Tower — $53k–$236k, 476 units, full amenity deck.</div></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">3</span>Talk to the sales desk — privately</div></div>
+    <div class="step-body"><p>The buyer taps <strong>“Talk to the sales desk”</strong> and a private chat opens.
+      Everything here is <strong>kept off-chain</strong> — only the buyer and the desk can see it.</p></div>
+    <div class="shot phone"><img src="manual-screenshots/03-buyer-chat-open-mobile.webp" alt="Private chat with the sales desk" loading="lazy">
+      <div class="cap">A private line to the desk — “kept off-chain”.</div></div>
+  </section>
+
+  <!-- 3b -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">4</span>Ask for what you want — the desk answers live</div></div>
+    <div class="step-body"><p>The buyer asks for a 1-bedroom around $70k. The desk (an AI sales assistant working
+      from the <strong>real, private catalogue</strong>) replies in the thread and pulls matching units.</p></div>
+    <div class="shot phone"><img src="manual-screenshots/03b-buyer-chat-live-ai-reply-mobile.webp" alt="Live desk reply" loading="lazy">
+      <div class="cap">A real, live reply — the desk works from the actual inventory, not a script.</div></div>
+  </section>
+
+  <!-- 4 desk -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-desk">Sales desk · laptop</span>
+      <div class="step-title"><span class="step-no">5</span>The developer’s side of the same deal</div></div>
+    <div class="step-body"><p>On the developer’s workspace, the enquiry appears under <strong>Direct enquiries</strong>.
+      The desk vets the buyer, then <strong>opens specific units</strong> to them — revealing exact specs and price
+      only to that buyer.</p></div>
+    <div class="shot laptop"><img src="manual-screenshots/04-desk-workspace-enquiry-laptop.webp" alt="Developer workspace — direct enquiries" loading="lazy">
+      <div class="cap">The developer’s private workspace: enquiries, buildings, agreements, settlement.</div></div>
+  </section>
+
+  <!-- 5 reserved -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">6</span>The unit is reserved — firm-held on-chain</div></div>
+    <div class="step-body"><p>Once the desk opens a unit, it shows on the buyer’s screen under
+      <strong>“Units opened to you”</strong>, marked <strong>“✓ Reserved for you — firm-held on-chain while you
+      proceed.”</strong> Next step: pay the deposit.</p></div>
+    <div class="shot phone"><img src="manual-screenshots/03-buyer-unit-reserved-mobile.webp" alt="Unit reserved for the buyer" loading="lazy">
+      <div class="cap">The unit is held on-chain for this buyer — with a “Pay deposit with $VRX” button.</div></div>
+  </section>
+
+  <!-- 6 deposit paid + badge -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">7</span>Pay the deposit — it lands in escrow</div></div>
+    <div class="step-body">
+      <p>The buyer pays the <strong>deductible reservation deposit</strong> in $VRX. The money moves straight into
+      <strong>VRX escrow</strong> — not the developer’s wallet.</p>
+      <div class="callout"><b>🛡 Escrow-protected ✓</b> appears on the purchase, with the line
+        <i>“Your deposit is held in escrow — released to the developer only when the deal proceeds.”</i></div>
+      <p>The reservation now appears in <strong>My purchases</strong> with a draft Sale &amp; Purchase agreement,
+      sealed digitally and provisional until the paper contract is signed.</p>
+    </div>
+    <div class="shot phone"><img src="manual-screenshots/05-buyer-deposit-paid-escrow-badge-mobile.webp" alt="Deposit paid — escrow-protected badge" loading="lazy">
+      <div class="cap">Deposit paid → held in escrow, with the <span class="badge-inline">🛡 Escrow-protected ✓</span> guarantee and the draft agreement.</div></div>
+  </section>
+
+  <!-- 7 fork -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">8</span>The developer asks to release — the buyer is in control</div></div>
+    <div class="step-body">
+      <p>When the deal is proceeding, the developer requests release of the escrowed deposit. This starts the buyer’s
+      <strong>protection window</strong>. The buyer now has two choices:</p>
+      <div class="fork">
+        <div class="opt veto"><h4>Veto release</h4><p>If the deal fell through, the buyer vetoes and gets the full
+          deposit refunded.</p></div>
+        <div class="opt waive"><h4>Release now — close fast</h4><p>If the buyer is happy, they waive the window and
+          release the deposit to the developer immediately.</p></div>
+      </div>
+    </div>
+    <div class="shot phone"><img src="manual-screenshots/06-buyer-escrow-release-requested-fork-mobile.webp" alt="Veto or release-now fork" loading="lazy">
+      <div class="cap">The buyer decides: veto for a refund, or release now for a fast close.</div></div>
+  </section>
+
+  <!-- 7b desk panel -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-desk">Sales desk · laptop</span>
+      <div class="step-title"><span class="step-no">9</span>The developer’s matching control</div></div>
+    <div class="step-body"><p>On the desk side, the developer sees <strong>🔒 Escrow</strong> for that unit:
+      <i>“Release requested — the buyer’s veto window closes in 9m. You can finalize once it closes.”</i> Neither side
+      can shortcut the other — the money only moves on a legitimate, mutual step.</p></div>
+    <div class="shot laptop"><img src="manual-screenshots/06b-desk-escrow-release-panel-laptop.webp" alt="Developer escrow release panel" loading="lazy">
+      <div class="cap">The developer’s escrow panel — request release, then finalize once the window closes.</div></div>
+  </section>
+
+  <!-- 8 endings -->
+  <section class="step">
+    <div class="step-head"><span class="step-side side-mobile">Buyer · mobile</span>
+      <div class="step-title"><span class="step-no">10</span>Two honest endings</div></div>
+    <div class="step-body">
+      <p><strong>A — Release now (fast close).</strong> The buyer waives the window; the deposit is released to the
+      developer. The purchase shows <i>“✓ Your deposit was released to the developer.”</i></p>
+    </div>
+    <div class="shot phone"><img src="manual-screenshots/08-buyer-escrow-waive-released-mobile.webp" alt="Deposit released to developer" loading="lazy">
+      <div class="cap">Ending A — the buyer released the deposit for a fast close.</div></div>
+    <div class="step-body">
+      <p style="margin-top:18px"><strong>B — Veto (deal fell through).</strong> The buyer vetoes; the deposit is
+      refunded in full. The purchase shows <i>“↩ Your escrowed deposit was refunded.”</i> and the balance is restored.</p>
+    </div>
+    <div class="shot phone"><img src="manual-screenshots/07-buyer-escrow-veto-refunded-mobile.webp" alt="Deposit refunded to buyer" loading="lazy">
+      <div class="cap">Ending B — the buyer vetoed and got the full deposit back.</div></div>
+  </section>
+
+  <div class="divider"></div>
+  <div class="callout warn">
+    <b>Why this matters.</b> The buyer’s deposit is never exposed to a developer who might walk away with it — VRX
+    holds it, and the buyer keeps a veto until the deal is real. The developer still gets paid the moment the deal
+    proceeds. One guarantee, both sides protected.
+  </div>
+
+  <footer>
+    VRX — a private, on-chain reservation primitive. One source of truth for who reserved what.<br>
+    This walkthrough shows capabilities on test-value deposits; real-money escrow is a protected, staged rollout.<br>
+    © Vetted Realty / VRX.
+  </footer>
+</div>
+</body>
+</html>

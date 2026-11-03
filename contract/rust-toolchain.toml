@@ -1,0 +1,7 @@
+# was pinned to 1.86.0 because near-sdk 5.26.1 baked a pre-protocol-84 ceiling that
+# made cargo-near reject wasm built with rustc >= 1.87. Bumping to near-sdk 5.29.1 (declares
+# protocol-84 support) lifted that wall, so we build on stable now — one toolchain for both the
+# deployable wasm AND the near-workspaces tests. See docs/.md (supersedes).
+[toolchain]
+channel = "stable"
+targets = ["wasm32-unknown-unknown"]

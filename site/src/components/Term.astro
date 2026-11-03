@@ -1,0 +1,22 @@
+---
+// Inline glossary term with a wikipedia-style hover/focus popup.
+// Usage: <Term k="hash" /> or <Term k="hash">custom label</Term>
+import { GLOSSARY_MAP } from "@data/glossary";
+
+interface Props { k: string }
+const { k } = Astro.props as Props;
+const entry = GLOSSARY_MAP[k];
+if (!entry && import.meta.env.DEV) {
+  // Fail loud in dev so a typo'd key doesn't ship silently.
+  throw new Error(`<Term k="${k}"> — no glossary entry. Add it to src/data/glossary.ts.`);
+}
+const label = entry?.term ?? k;
+const body = entry?.short ?? "";
+const hasSlot = Astro.slots.has("default");
+---
+<span class="term" tabindex="0" role="button" aria-describedby={`pop-${k}`}>
+  {hasSlot ? <slot /> : label}
+  <span class="term-pop" id={`pop-${k}`} role="tooltip">
+    <strong>{entry?.term ?? k}</strong>{body}
+  </span>
+</span>

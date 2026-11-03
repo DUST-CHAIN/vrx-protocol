@@ -1,0 +1,41 @@
+[package]
+name = "vrx-contract"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# cdylib = the deployable wasm. rlib lets the host-target build link the crate for tests.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Pinned EXACTLY to 5.29.1: the latest 5.x, and the first line that DECLARES
+# nearcore protocol-84 support (via near-sys 0.2.14) — which is what lets the deployable wasm
+# build on a MODERN Rust toolchain (stable) instead of the legacy 1.86 pin. The 5.26.1 line
+# baked a 1.86 ceiling into the SDK itself (cargo-near reads protocol support from near-sdk's
+# metadata, not ours), and its dep tree had already drifted past 1.86 — a maintenance dead-end.
+# `=` still prevents silent drift; bump deliberately, with a fresh wasm re-verify. Supersedes
+# 's 1.86 pin. (Storage layout + `#[near]` macro API are stable across 5.x → the ported
+# contract needed no source changes; the 14-test characterization suite re-ran green.)
+near-sdk = { version = "=5.29.1", features = ["legacy"] }
+borsh = "1.5"
+
+[dev-dependencies]
+# `unit-testing` bypasses near-sdk 5.x's `compile_error!` guard (which otherwise blocks the
+# host-target compile that `cargo test` needs, demanding `cargo near build`). Cargo unifies
+# features, so this only affects test builds; `cargo near build` ignores dev-deps and the
+# deployable wasm stays lean. NOTE: enabling it re-resolves the lock (pulls near-crypto test
+# utils) — Cargo.lock was regenerated to match.
+near-sdk = { version = "=5.29.1", features = ["legacy", "unit-testing"] }
+# `unstable` exposes `compile_project` (used to build this crate's wasm for the sandbox).
+near-workspaces = { version = "0.23", features = ["unstable"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+serde_json = "1"
+anyhow = "1"
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
