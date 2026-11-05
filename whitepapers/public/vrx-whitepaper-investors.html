@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VRX — White Paper · Investors &amp; Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../_template/vrx-paper.css" />
+</head>
+<body>
+
+<!-- screen-only print helper -->
+<div class="toolbar no-print">
+  <span>A4 · print at 100% · Public</span>
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
+
+<!-- ============================================================ SHEET 1 — COVER ============================================================ -->
+<section class="sheet" data-footer="VRX · Investors &amp; Partners · Public">
+  <div class="cover">
+    <div class="top">
+      <div class="brand-row">
+        <svg class="logo" viewBox="0 0 48 48" aria-label="VRX">
+          <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" fill="none" stroke="#2f6ef0" stroke-width="2.5"/>
+          <path d="M16 17 L24 33 L32 17" fill="none" stroke="#0fae7e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">VRX</span>
+        <span class="classification public" style="margin-left:auto">Public</span>
+      </div>
+    </div>
+
+    <div class="mid">
+      <p class="eyebrow">White Paper · Investors &amp; Partners</p>
+      <h1>A private, on-chain<br/>reservation primitive</h1>
+      <p class="subtitle">One trusted source of truth for <em>who reserved what</em> — fed to many
+        mutually-distrusting sales channels, without putting prices, terms, or personal data on-chain.</p>
+      <div style="margin-top:16pt"><span class="seal">Vetted network</span></div>
+    </div>
+
+    <div class="bot">
+      <hr class="rule" />
+      <div class="meta">
+        <div>Audience<b>Investors &amp; partners</b></div>
+        <div>Status<b>Testnet · calculating-hand.testnet</b></div>
+        <div>Live demo<b>vrx.poolo.org (sandbox)</b></div>
+        <div>As of<b>November 2026</b></div>
+      </div>
+      <div class="callout" style="margin-top:12pt">
+        <p class="k">Honest-stage statement</p>
+        <p>VRX is early. The contract runs on NEAR testnet and a seeded sandbox is live, but the network is
+          <strong>pre-revenue</strong> and carries no production traction. This document describes a built
+          primitive and a revenue <em>model</em> by design — not realised numbers. Where something is not yet
+          live it is labelled <span class="t-soon">in&nbsp;progress / planned</span>. The paper stands on the
+          truth of what exists.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 2 — EXECUTIVE SUMMARY ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 2">
+  <p class="eyebrow">Executive summary</p>
+  <h1 style="font-size:22pt">The thesis, in one page</h1>
+  <p class="lead">VRX is a reservation primitive: a callable NEAR smart contract that records
+    <em>who reserved what</em>, paired with a private off-chain portal that carries everything the chain must
+    not — identities, prices, specifications and deal terms. Its market is any business that sells unique,
+    non-substitutable inventory through channels that do not trust one another.</p>
+
+  <p>When each item is one-of-a-kind — a specific apartment, a specific pedigree animal, a specific machine —
+    double-booking it across channels is not an inconvenience, it is a breached contract. Yet the tools that
+    could give everyone a shared answer all fail the confidentiality test: a shared database or CRM centralizes
+    trust in one vendor and leaks who is buying what at what price; a naïve public-chain listing leaks the very
+    terms that make a deal confidential, forever. The market has had to choose between <em>shared truth</em> and
+    <em>privacy</em>. VRX refuses the trade-off.</p>
+
+  <div class="callout vetted">
+    <p class="k">The design answer — and the moat</p>
+    <p>VRX enforces a strict <strong>split</strong>. The chain holds only opaque hashes and neutral account ids:
+      it proves <em>that</em> a reservation exists and <em>who</em> holds it, and nothing else. The meaning — the
+      <em>what</em>, the <em>how-much</em>, the <em>with-whom</em> — lives off-chain under server-side
+      authorization and field-level masking. Layered on top is a <strong>vetted operator network</strong> and an
+      owned forensic/provenance capability. The moat is not a faster database; it is the discipline of what is
+      never written to the ledger at all, plus the human-vetting layer and IP others have not built.</p>
+  </div>
+
+  <dl class="facts">
+    <dt>What's built</dt><dd>On-chain reservation / hold / exclusive / attestation registry (live on NEAR testnet); role-scoped portal; booking funnel; $VRX credit ledger; provenance-stamped imagery.</dd>
+    <dt>Beachhead</dt><dd>Off-plan real estate — the sharpest version of the problem and the working proof.</dd>
+    <dt>Expansion</dt><dd>The contract never "knows" it is real estate — every reference is an opaque hash — so the same primitive serves cars, equipment, art, livestock, event slots.</dd>
+    <dt>Revenue model</dt><dd>Design-stage: watchlist / network access, commission anchoring, and a deposit / settlement rail. No realised revenue yet.</dd>
+    <dt>Posture</dt><dd>VRX facilitates and seals; it does not adjudicate disputes or warrant enforceability.</dd>
+  </dl>
+
+  <div class="fn">
+    <p>Status language throughout is honest: <span class="t-live">built</span> means it runs today;
+      <span class="t-soon">in&nbsp;progress / planned</span> means designed or partially built but not yet usable
+      as described. The live demo is a seeded <em>sandbox</em> — write actions are simulated; the contract itself
+      runs for real on NEAR testnet.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 3 — §1 THE PROBLEM (as a market problem) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 3">
+  <p class="eyebrow">Section 1 · The market problem</p>
+  <h1 style="font-size:22pt">Selling the unique, through channels that distrust each other</h1>
+  <p class="lead">A whole class of high-value commerce shares one shape: scarce, identified inventory sold by an
+    owner through many intermediaries who compete with one another. The existing toolchain breaks on it in three
+    compounding ways — each with a direct cost.</p>
+
+  <h2>Failure 1 — double-booking a unique thing</h2>
+  <p>When inventory is fungible (seats, generic SKUs) an oversell is an inconvenience you reconcile later. When
+    each item is unique, two channels reserving "312" at once is a hard conflict: one buyer must be told the
+    thing they were promised is gone. In off-plan property that can mean a lost sale, a damaged agency
+    relationship, and legal exposure on a signed reservation. The market needs <strong>one authoritative
+    answer</strong> to "is this exact unit still available?" that every channel reads the same way, in real
+    time — and no shared spreadsheet or per-agency portal delivers it across parties who will not share a
+    database.</p>
+
+  <h2>Failure 2 — privacy leakage</h2>
+  <p>The naïve fixes leak. A shared spreadsheet or a single vendor database exposes who is buying what, at what
+    price, through whom — to the vendor and often to rival channels. Putting the registry on a public blockchain
+    is worse: now prices, parties and terms are world-readable forever. The commercially-sensitive and personal
+    details of a deal are exactly what must <em>not</em> be shared to get the shared truth. For a developer, a
+    leaked price list or buyer book is a competitive and regulatory liability, not a footnote.</p>
+
+  <h2>Failure 3 — circumvention / disintermediation</h2>
+  <p>A channel that learns the end-buyer and the operator can be tempted to cut the introducer out and deal
+    direct — the commission disappears and the relationship that generated the lead is destroyed. The obvious
+    counter-measure, hiding the buyer's identity until a deal is firm, is itself a privacy problem, and it must
+    be reconciled with the operator's legitimate need to confirm a booking. The money and the trust are on the
+    same seam.</p>
+
+  <div class="callout">
+    <p class="k">The tension in one line</p>
+    <p>Everyone needs to agree on <em>the same reservation state</em>, while almost no one is entitled to see
+      <em>the same reservation details</em>. A single store that satisfies the first requirement usually
+      violates the second. VRX exists to hold both at once — and that gap is the market it addresses.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 4 — §1 cont. WHO FEELS IT + THE COST ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 4">
+  <p class="eyebrow">Section 1 · The market problem</p>
+  <h1 style="font-size:22pt">Who feels it, and what it costs</h1>
+  <p class="lead">Off-plan real estate is the sharpest case and VRX's beachhead; the same shape recurs across
+    every market where inventory is scarce, identified, and sold through intermediaries.</p>
+
+  <h2>The beachhead: multi-agency off-plan property</h2>
+  <p>A developer releases limited units to multiple agencies, each with multiple agents, selling to buyers who
+    must stay confidential — with deposits, commissions and completion terms attached. Every failure above is
+    routine there: agencies double-book the same unit; price lists and buyer identities leak between rivals;
+    agents and developers each fear being cut out of the commission. Today the industry papers over this with
+    manual reconciliation, phone-call availability checks, and trust that does not scale past a handful of
+    relationships.</p>
+
+  <h2>Where the same shape recurs</h2>
+  <table>
+    <thead><tr><th>Market</th><th>The non-substitutable unit</th><th>The distrusting channels</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Off-plan / resale property</strong></td><td>A specific unit, floor, view</td><td>Multiple agencies &amp; agents, in-house desk</td></tr>
+      <tr><td><strong>High-value vehicles</strong></td><td>A specific VIN / spec / allocation</td><td>Dealers, brokers, allocation holders</td></tr>
+      <tr><td><strong>Equipment &amp; machinery</strong></td><td>A specific serial / configured asset</td><td>Distributors, resellers, finance partners</td></tr>
+      <tr><td><strong>Art &amp; collectibles</strong></td><td>A specific work / lot</td><td>Galleries, dealers, private intermediaries</td></tr>
+      <tr><td><strong>Pedigree livestock</strong></td><td>A specific animal / lineage</td><td>Breeders, agents, buyers</td></tr>
+      <tr><td><strong>Event / venue slots</strong></td><td>A specific date / space</td><td>Promoters, agencies, planners</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout vetted">
+    <p class="k">Why this generalises cleanly</p>
+    <p>The contract does not model "apartment" or "car" — it models availability and holds over opaque keys it
+      cannot read. That is a deliberate architectural choice (not an afterthought): the same deployed primitive
+      serves every row above without a rewrite. Real estate proves it; the expansion path is a configuration and
+      go-to-market question, not a re-engineering one.</p>
+  </div>
+
+  <p class="fn">A note on market sizing: these are large, established markets, but VRX makes no claim to a
+    specific TAM figure in this document. The honest framing is qualitative — the problem is real, recurrent,
+    and under-served by existing tooling. Any quantification would be invented, and VRX does not invent numbers.</p>
+</section>
+
+<!-- ============================================================ SHEET 5 — §2 WHAT VRX IS ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 5">
+  <p class="eyebrow">Section 2</p>
+  <h1 style="font-size:22pt">What VRX is</h1>
+  <p class="lead">A callable NEAR smart contract — the reservation and hold registry — plus an off-chain portal:
+    the role-scoped apps each participant uses. Together they are the reservation primitive.</p>
+
+  <h2>The primitive, precisely</h2>
+  <p>VRX records reservations over <strong>non-substitutable</strong> inventory. Its on-chain state is
+    deliberately thin: a unit is <code>open</code>, on <code>hold</code>, <code>closed</code>, or
+    <code>done</code>; a claim is open, accepted, declined, or confirmed; an exclusive window is held by one
+    agency or it is not. Everything that would identify the unit, the buyer, the price or the terms is an opaque
+    hash. The contract does not model "apartment" or "car" — it models availability and holds over keys it
+    cannot read.</p>
+
+  <div class="callout vetted">
+    <p class="k">312 &ne; 311</p>
+    <p>Value in this system scales with the worth of the <em>specific</em> reserved item. The primitive's whole
+      reason to exist is that substituting one unit for another is not acceptable — so the registry tracks each
+      unit individually and a hold on one is never a hold on another. This is why the addressable value per
+      transaction is high: these are not low-ticket bookings.</p>
+  </div>
+
+  <h2>The four pillars, wrapped in vetting</h2>
+  <p>The product is organised as four pillars, bound together by vetting and connected through the roles:</p>
+  <table>
+    <thead><tr><th>Pillar</th><th>What it is</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Availability</strong></td><td>The foundation — what inventory exists and is open.</td><td class="t-live">built</td></tr>
+      <tr><td><strong>Communications</strong></td><td>Availability made useful: clearly conveyed to the market, with channels + change-notice.</td><td class="t-live">built</td></tr>
+      <tr><td><strong>Payments</strong></td><td>Communication turned into action — deposits, settlement projection (on-rail settlement planned).</td><td class="t-live">built / <span class="t-soon">rail planned</span></td></tr>
+      <tr><td><strong>Accounting</strong></td><td>Every payment tracked and accounted for (two-sided attestation ledger; VRX does not move money in-app).</td><td class="t-live">built</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Vetting</strong> ties the four together: VRX vets the whole system — every state, every step — so
+    participants who do not trust each other can transact on one shared truth. Vetting is human-led (see §5); the
+    chain only anchors the <em>fact and version</em> of a sign-off, never its contents. That vetting layer is
+    both a trust mechanism and a business: it is what Vetted Realty operates.</p>
+</section>
+
+<!-- ============================================================ SHEET 6 — §2.5 THE LANDSCAPE ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 6">
+  <p class="eyebrow">Section 2.5 · Competitive landscape</p>
+  <h1 style="font-size:22pt">Why nothing in the market does this</h1>
+  <p class="lead">Stated plainly, not boastfully — the moat is a design choice others have not made, not a claim
+    of being uniquely clever. Each existing approach gives you one half of what the problem needs and pays for it
+    with the other half.</p>
+
+  <h2>Three existing approaches, and where each leaks</h2>
+  <table>
+    <thead><tr><th>Approach</th><th>Gives you</th><th>What it costs</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Generic booking / CRM software</strong></td>
+        <td>A shared calendar and pipeline.</td>
+        <td>Centralizes trust in one vendor's database; the vendor (and often rival channels) can see who buys
+          what at what price. No independently-provable record; the operator still owns the single point of
+          truth and failure.</td>
+      </tr>
+      <tr>
+        <td><strong>Naïve on-chain listing</strong></td>
+        <td>A tamper-evident, independently-verifiable record.</td>
+        <td>Publishes prices, parties and terms to the world forever. The confidentiality that makes a deal a
+          deal is destroyed to gain the shared truth.</td>
+      </tr>
+      <tr>
+        <td><strong>Point-to-point / off-platform deals</strong></td>
+        <td>Privacy by obscurity.</td>
+        <td>No shared availability, so double-booking and circumvention are endemic; no neutral record when a
+          dispute arises.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p class="k">VRX's position</p>
+    <p>VRX takes the tamper-evident, independently-verifiable record from the on-chain approach and the
+      confidentiality from the off-platform approach, and reconciles them with a <strong>split</strong>: the
+      chain carries proof-of-state over opaque keys; a private, access-controlled off-chain layer carries the
+      meaning. No incumbent in the booking / CRM space is built this way, and no generic "put it on-chain"
+      project solves the confidentiality half. VRX sits in the gap between them on purpose.</p>
+  </div>
+
+  <h2>Honest limits of the claim</h2>
+  <ul class="ticks">
+    <li>The off-chain layer's confidentiality rests on <strong>server-side authorization</strong>, not
+      cryptography — VRX must be trusted to run it correctly. A standing security/privacy audit is how that
+      trust is made checkable, and it is a submittable artifact to any partner who asks.</li>
+    <li>The on-chain opacity is absolute by construction, but it only protects what lives on-chain; a leak, if it
+      happened, would come from the off-chain layer — which is where almost all the engineering attention goes.</li>
+    <li>VRX is not the only system that splits on/off chain. Its specific, defensible contribution is the
+      reservation-primitive framing, the vetted operator network, and the owned provenance/forensic layer — not
+      the generic idea of anchoring a hash.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ SHEET 7 — §2.5 cont. THE MOAT, EXPANDED ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 7">
+  <p class="eyebrow">Section 2.5 · Competitive landscape</p>
+  <h1 style="font-size:22pt">The moat, component by component</h1>
+  <p class="lead">A defensible position in this category is not one feature; it is the compounding of four
+    things that are each individually buildable but collectively hard to assemble and harder to copy credibly.</p>
+
+  <h2>1 — The on/off-chain split as a discipline, not a toggle</h2>
+  <p>The hardest part of the design is restraint: deciding what is <em>never</em> written to the chain. That
+    discipline runs through every surface and every migration of the contract's state schema. A competitor
+    cannot bolt it on later — retrofitting confidentiality onto a system that already leaks terms means rebuilding
+    it. VRX started from this constraint, so the whole architecture is shaped by it.</p>
+
+  <h2>2 — Human vetting as the trust anchor</h2>
+  <p>Mutually-distrusting parties transact on one shared truth only because a trusted entity vets who enters the
+    network and anchors the fact of each sign-off. That vetting is human-led and operated as a business. It is
+    the part of the system that cannot be replaced by code alone — and it is exactly the part that incumbents in
+    pure-software booking tools do not have.</p>
+
+  <h2>3 — The owned provenance / forensic capability</h2>
+  <p>Sensitive imagery that must be shown to a counterparty is <strong>provenance-stamped so a leaked image is
+    traceable</strong> back to the recipient it was served to — while remaining anonymous to whoever holds it.
+    The mechanism is deliberately private; it is the moat, and it is owned IP. In this public document we state
+    only the capability: a leaked sensitive image can be attributed by VRX, which changes the incentive to leak.</p>
+
+  <h2>4 — The network, once it exists</h2>
+  <p>Like any trust network, VRX gets more valuable as more vetted operators and channels join: each developer
+    brings agencies, each agency brings agents and buyers. The split architecture is what lets rivals coexist on
+    the same network without exposing each other — which is the precondition for the network to form at all.</p>
+
+  <div class="callout vetted">
+    <p class="k">The compounding</p>
+    <p>Any one of these is copyable. Together — the split that must be designed in from the start, a vetting
+      business, owned forensic IP, and a network that benefits from the split — they are a position a fast
+      follower cannot assemble by shipping a feature. That is the investable moat.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 8 — §3 ARCHITECTURE (split diagram) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 8">
+  <p class="eyebrow">Section 3 · Architecture</p>
+  <h1 style="font-size:22pt">The on-chain / off-chain split</h1>
+  <p class="lead">One rule governs the whole system: <strong>meaning never touches the chain</strong>. The figure
+    shows what lives where, and the one-way binding between them.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 300" role="img" width="680" height="300">
+        <title>VRX on-chain / off-chain split</title>
+        <desc>The off-chain portal holds identities, prices, specifications, terms and sealed records.
+          Each sealed record's hash is anchored into the on-chain registry, which holds only opaque
+          hashes, neutral account ids and state codes. The anchor is one-way: the chain cannot recover
+          meaning from the hash.</desc>
+
+        <!-- OFF-CHAIN panel -->
+        <g font-family="Inter, sans-serif">
+          <rect x="18" y="40" width="300" height="236" rx="12" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="34" y="64" font-size="12" font-weight="700" fill="#141a24">OFF-CHAIN · the portal</text>
+          <text x="34" y="80" font-size="9.5" fill="#6b7689">meaning lives here, access-controlled</text>
+          <g font-size="10" fill="#3a4559">
+            <rect x="34" y="94" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="111">Identities · buyer PII · nationality · ID refs</text>
+            <rect x="34" y="126" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="143">Prices · payment plans · commission rulebooks</text>
+            <rect x="34" y="158" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="175">Specifications · S&amp;P terms · chat · images</text>
+            <rect x="34" y="190" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="207">Sealed records (salted) + hash-chained logs</text>
+          </g>
+          <text x="34" y="244" font-size="9.5" fill="#0fae7e" font-weight="600">server-side authz + field masking</text>
+          <text x="34" y="260" font-size="9.5" fill="#6b7689">seal = salted SHA-256 over the record</text>
+        </g>
+
+        <!-- ON-CHAIN panel -->
+        <g font-family="Inter, sans-serif">
+          <rect x="400" y="40" width="262" height="236" rx="12" fill="#eef2f8" stroke="#2f6ef0"/>
+          <text x="416" y="64" font-size="12" font-weight="700" fill="#141a24">ON-CHAIN · NEAR contract</text>
+          <text x="416" y="80" font-size="9.5" fill="#6b7689">state only — opaque, world-readable</text>
+          <g font-size="10" fill="#3a4559">
+            <rect x="416" y="94" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="111">unit_key · request_hash (opaque)</text>
+            <rect x="416" y="126" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="143">status 0/1/2/3 · account ids</text>
+            <rect x="416" y="158" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="175">commission_hash · seal_hash anchors</text>
+            <rect x="416" y="190" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="207">holds · exclusives · attestations</text>
+          </g>
+          <text x="416" y="244" font-size="9.5" fill="#2f6ef0" font-weight="600">no PII · no price · no terms — ever</text>
+          <text x="416" y="260" font-size="9.5" fill="#6b7689">a scraper sees state, never meaning</text>
+        </g>
+
+        <!-- one-way anchor arrow -->
+        <g>
+          <path d="M318 170 H400" stroke="#2f6ef0" stroke-width="2.5" fill="none"/>
+          <polygon points="392,164 402,170 392,176" fill="#2f6ef0"/>
+          <text x="359" y="160" font-family="Inter, sans-serif" font-size="9" fill="#2f6ef0" text-anchor="middle" font-weight="700">anchor (hash)</text>
+          <path d="M359 182 l-6 10 M359 182 l6 10" stroke="#d64545" stroke-width="2" fill="none"/>
+          <text x="359" y="206" font-family="Inter, sans-serif" font-size="8" fill="#d64545" text-anchor="middle">one-way · irreversible</text>
+        </g>
+
+        <!-- travelling hash token (SMIL enhancement; invisible at t=0) -->
+        <circle r="5" fill="#2f6ef0" opacity="0">
+          <animateMotion dur="2.4s" repeatCount="indefinite" path="M318 170 H400"/>
+          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="2.4s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <figcaption>Figure 1 — The split. Off-chain records are sealed; only their hashes are anchored on-chain. The binding is one-way.</figcaption>
+  </figure>
+
+  <div class="callout">
+    <p class="k">Why one-way matters</p>
+    <p>An anchored <code>seal_hash</code> lets anyone later prove a specific off-chain record is the one that was
+      committed (re-seal it, compare). It never lets anyone recover the record from the hash. Tamper-evidence
+      without disclosure is the whole trick — and it is what makes the shared truth safe to publish.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 9 — §3 DATA FLOW END TO END ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 9">
+  <p class="eyebrow">Section 3 · Architecture</p>
+  <h1 style="font-size:22pt">One booking, end to end</h1>
+  <p class="lead">Follow a single deal from live availability to a confirmed hold, watching where meaning stays
+    and only a hash moves. The contract is deliberately thin; the product value is in orchestrating this flow
+    safely.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 250" role="img" width="680" height="250">
+        <title>VRX reservation flow</title>
+        <desc>An operator publishes availability; an agency's agent books a unit for a buyer privately;
+          a deposit is taken and the unit is held on-chain; the developer confirms. Terms, price and
+          buyer identity stay off-chain and sealed; only an opaque seal and state are anchored.</desc>
+
+        <g font-family="Inter, sans-serif" font-size="11" fill="#141a24" text-anchor="middle">
+          <rect x="14" y="40" width="120" height="58" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="74" y="64" font-weight="700">Operator</text><text x="74" y="82" fill="#6b7689" font-size="9.5">stamps tile = open</text>
+
+          <rect x="178" y="40" width="120" height="58" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="238" y="64" font-weight="700">Agent</text><text x="238" y="82" fill="#6b7689" font-size="9.5">opens claim</text>
+
+          <rect x="342" y="40" width="120" height="58" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="402" y="64" font-weight="700">Hold</text><text x="402" y="82" fill="#b7791f" font-size="9.5">deposit · timed</text>
+
+          <rect x="506" y="40" width="150" height="58" rx="10" fill="#e2f7f0" stroke="#0fae7e"/>
+          <text x="581" y="64" font-weight="700">Developer</text><text x="581" y="82" fill="#0fae7e" font-size="9.5">confirms claim</text>
+        </g>
+
+        <g stroke="#2f6ef0" stroke-width="2" fill="none">
+          <path d="M134 69 H178"/><polygon points="171,64 179,69 171,74" fill="#2f6ef0" stroke="none"/>
+          <path d="M298 69 H342"/><polygon points="335,64 343,69 335,74" fill="#2f6ef0" stroke="none"/>
+          <path d="M462 69 H506"/><polygon points="499,64 507,69 499,74" fill="#2f6ef0" stroke="none"/>
+        </g>
+
+        <!-- travelling token, invisible at t=0 -->
+        <circle r="5" fill="#2f6ef0" opacity="0">
+          <animateMotion dur="3s" repeatCount="indefinite" path="M134 69 H178 M298 69 H342 M462 69 H506"/>
+          <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.06;0.5;0.92;1" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <!-- hold pulse, invisible at t=0 -->
+        <circle cx="402" cy="69" r="26" fill="none" stroke="#b7791f" stroke-width="2" opacity="0">
+          <animate attributeName="r" values="26;40;26" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0.45;0" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- on-chain / off-chain lanes -->
+        <g font-family="Inter, sans-serif" font-size="9">
+          <rect x="14" y="128" width="642" height="40" rx="8" fill="#eef2f8" stroke="#2f6ef0"/>
+          <text x="26" y="146" fill="#2f6ef0" font-weight="700">ON-CHAIN</text>
+          <text x="26" y="160" fill="#6b7689">stamp_tile · open_claim(request_hash) · reply/confirm · hold status + expiry — all opaque</text>
+
+          <rect x="14" y="176" width="642" height="52" rx="8" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="26" y="194" fill="#141a24" font-weight="700">OFF-CHAIN</text>
+          <text x="26" y="208" fill="#6b7689">buyer identity · price · payment plan · S&amp;P terms · commission rulebook — sealed + masked</text>
+          <text x="26" y="221" fill="#6b7689">reveal of the buyer to the developer is a separate, consented, logged ceremony</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Figure 2 — One booking, end to end. Only opaque keys + state cross into the on-chain lane.</figcaption>
+  </figure>
+
+  <h3>The step sequence</h3>
+  <ol>
+    <li>Operator stamps a tile → unit <code>open</code> (opaque <code>unit_key</code>).</li>
+    <li>Agent opens a claim (or burns a booking token) → an opaque <code>request_hash</code> anchors the off-chain request; the unit moves to <code>hold</code> with a timed expiry.</li>
+    <li>Off-chain: deposit recorded, buyer profile sealed, masked to the developer by default.</li>
+    <li>Developer replies / confirms → state advances; a consented reveal of the buyer is a separate ceremony.</li>
+    <li>On completion the tile is finalized → <code>done</code>; expired holds auto-release back to <code>open</code>, so scarce capacity is never stranded.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ SHEET 10 — §4 PRIVACY MODEL (capability-level) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 10">
+  <p class="eyebrow">Section 4 · Privacy</p>
+  <h1 style="font-size:22pt">The privacy model — the moat as capability</h1>
+  <p class="lead">Two distinct protections, applied per surface: on-chain opacity by construction, and off-chain
+    access control by the server. This is the capability that converts a public chain into infrastructure for
+    confidential commerce.</p>
+
+  <h2>Protection 1 — on-chain opacity (by construction)</h2>
+  <p>Everything on the contract is an opaque hash (unit, request, seal, commission) plus neutral account ids and
+    status codes. A chain scraper sees <em>"account X holds an exclusive on hash 07f2…"</em> — state, never
+    meaning. The building, unit, price, party and terms cannot be derived from the chain. This protection holds
+    by design and needs no further work; it is the half of the moat that is mathematically done.</p>
+
+  <h2>Protection 2 — off-chain access control (by the server)</h2>
+  <p>The plaintext that carries meaning lives off-chain, protected by <strong>server-side authorization +
+    field-level masking</strong>, not by cryptography. The engineering question for every counterparty-facing
+    surface is: <em>is this read scoped to a caller entitled to it, and masked server-side before the wire?</em>
+    A UI blur is theatre; masking happens on the server, so the plaintext never reaches the browser for a masked
+    field. This is where VRX concentrates its engineering, and where the standing audit focuses.</p>
+
+  <h3>What an outsider can and cannot see</h3>
+  <table>
+    <thead><tr><th>Observer</th><th>Can see</th><th>Cannot see</th></tr></thead>
+    <tbody>
+      <tr><td>Chain scraper</td><td>That a reservation/hold/exclusive exists; which account holds it; status + version.</td><td>Unit, building, price, party, terms — anything meaningful.</td></tr>
+      <tr><td>A rival channel</td><td>Shared availability (open/held).</td><td>Another channel's buyer, price or terms.</td></tr>
+      <tr><td>Authority-review role</td><td>The <em>vetted state</em> for oversight.</td><td>Private buyer data — the moat extends to the regulator view.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout vetted">
+    <p class="k">Supporting capabilities (stated at capability level)</p>
+    <p>Salted seals give tamper-evidence without reversibility; identity-document images are encrypted at rest;
+      the dispute chat is append-only and hash-chained so a back-dated edit is detectable. And sensitive imagery
+      shown to a counterparty is <strong>provenance-stamped so a leaked image is traceable — the mechanism is
+      deliberately private (the moat)</strong>. Each is a control a partner's security team can verify against
+      the submittable audit.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 11 — §6 VETTING & THE OPERATOR NETWORK (business model part 1) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 11">
+  <p class="eyebrow">Section 5 · Network &amp; business model</p>
+  <h1 style="font-size:22pt">Vetting &amp; the operator network</h1>
+  <p class="lead">VRX is not only a contract — it is the vetting entity and the network operator. Identities
+    enter the system only through VRX; the chain then anchors the fact of a sign-off. This is where the primitive
+    becomes a business.</p>
+
+  <h2>Owner-gated onboarding</h2>
+  <p>Provisioning a seller (a developer) or an agency is <strong>owner-only</strong>: the contract owner is the
+    vetting identity. KYC / vetting is a human-led off-chain precondition done <em>before</em> the on-chain
+    registration call — nothing identifying ever lands on-chain. A developer's captive in-house sales team is
+    simply an org provisioned the same way; there is no special path. The gate is deliberate: an unvetted actor
+    cannot join, which is what makes the shared truth trustworthy to everyone already in it.</p>
+
+  <h2>The participant roles</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Developer(s)</strong></td><td>Own the inventory; grant access, mark availability, confirm bookings; may sell direct.</td></tr>
+      <tr><td><strong>Direct-seller</strong></td><td>The developer's own desk selling to a walk-in buyer (not a separate actor).</td></tr>
+      <tr><td><strong>Agent(s)</strong></td><td>Reserve units for buyers on behalf of an agency.</td></tr>
+      <tr><td><strong>Agency/ies</strong></td><td>Manage their agents; work the developers who grant them access.</td></tr>
+      <tr><td><strong>Buyer</strong></td><td>Browses direct-sale inventory and transacts via the desk — a <em>state</em>, not a vetted role.</td></tr>
+      <tr><td><strong>CEO / Approver</strong></td><td>Oversees high-stakes financial accountability (an approval trust-dial VRX sets per developer).</td></tr>
+      <tr><td><strong>Authority Review</strong></td><td>Sees the <em>vetted state</em> for oversight without ever seeing private data.</td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 190" role="img" width="680" height="190">
+        <title>VRX roles / trust network</title>
+        <desc>VRX vets and provisions developers and agencies. A developer grants access gates to
+          agencies; agencies supervise agents; agents serve buyers. Authority review sees vetted state
+          only. The whole network sits under VRX's vetting.</desc>
+        <g font-family="Inter, sans-serif" font-size="10.5" text-anchor="middle">
+          <rect x="280" y="14" width="120" height="40" rx="10" fill="#e8effd" stroke="#2f6ef0"/>
+          <text x="340" y="33" font-weight="700" fill="#141a24">VRX</text>
+          <text x="340" y="47" font-size="8.5" fill="#2f6ef0">vets · provisions · operates</text>
+
+          <rect x="70" y="86" width="120" height="40" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="130" y="110" font-weight="700" fill="#141a24">Developer</text>
+
+          <rect x="280" y="86" width="120" height="40" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="340" y="110" font-weight="700" fill="#141a24">Agency</text>
+
+          <rect x="490" y="86" width="140" height="40" rx="10" fill="#eef2f8" stroke="#d8dfeb"/>
+          <text x="560" y="105" font-weight="700" fill="#141a24">Authority review</text>
+          <text x="560" y="118" font-size="8" fill="#6b7689">vetted state only</text>
+
+          <rect x="280" y="150" width="120" height="34" rx="9" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="340" y="171" font-weight="700" fill="#141a24">Agent</text>
+
+          <rect x="430" y="150" width="120" height="34" rx="9" fill="#e2f7f0" stroke="#0fae7e"/>
+          <text x="490" y="171" font-weight="700" fill="#141a24">Buyer</text>
+        </g>
+        <g stroke="#2f6ef0" stroke-width="1.8" fill="none">
+          <path d="M300 54 L140 86"/><path d="M340 54 V86"/><path d="M380 54 L540 86"/>
+          <path d="M190 106 H280" stroke-dasharray="4 3"/><text x="235" y="100" font-family="Inter, sans-serif" font-size="8" fill="#6b7689" text-anchor="middle">grant gate</text>
+          <path d="M340 126 V150"/>
+          <path d="M360 150 L470 126" stroke="#0fae7e"/>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Figure 3 — Roles &amp; trust network. VRX vets the whole system; developers gate agencies; agencies supervise agents; agents serve buyers.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ SHEET 12 — PRIMITIVE vs BUSINESS; BEACHHEAD → EXPANSION ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 12">
+  <p class="eyebrow">Section 5 · Network &amp; business model</p>
+  <h1 style="font-size:22pt">The primitive vs the business it makes efficient</h1>
+  <p class="lead">Two things sit here, and keeping them distinct matters to anyone evaluating the opportunity:
+    VRX the reservation primitive, and Vetted Realty the business that operates the first vetted network on top
+    of it.</p>
+
+  <div class="facts">
+    <dt>VRX</dt><dd>The domain-agnostic primitive — the NEAR contract plus the portal and privacy architecture. It knows nothing about real estate; it is the reusable infrastructure.</dd>
+    <dt>Vetted Realty</dt><dd>The business behind the primitive: the vetting entity and network operator for the real-estate beachhead. It is the first, proving instance of a VRX network.</dd>
+  </div>
+
+  <h2>Why a beachhead, and why this one</h2>
+  <p>Off-plan real estate is chosen deliberately: it is the market where all three failures — double-booking,
+    privacy leakage, circumvention — are simultaneously present, high-value, and painful enough that operators
+    actively look for a fix. Proving the primitive where the problem is sharpest is the credible path: if VRX
+    works for multi-agency off-plan sales, the easier variants of the same shape follow.</p>
+
+  <h2>The expansion path</h2>
+  <p>Because the contract stores only opaque hashes and never models the asset, moving to a new vertical is not a
+    rebuild — it is a new vetted network, new off-chain field schemas, and a go-to-market motion. The same
+    deployed primitive underwrites each.</p>
+  <table>
+    <thead><tr><th>Phase</th><th>What it proves</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1 · Real-estate beachhead</strong></td><td>The primitive works for the hardest case; the vetting business is operable.</td><td class="t-live">built (testnet + sandbox)</td></tr>
+      <tr><td><strong>2 · Adjacent high-value assets</strong></td><td>Cars, equipment, art — same shape, lighter requirements.</td><td class="t-soon">planned</td></tr>
+      <tr><td><strong>3 · Primitive-as-infrastructure</strong></td><td>Third-party operators run their own vetted networks on VRX.</td><td class="t-soon">planned</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout vetted">
+    <p class="k">The investable shape</p>
+    <p>A business can invest in or partner with Vetted Realty (the operating network, with near-term go-to-market)
+      and/or in VRX the primitive (the longer-horizon infrastructure play). The architecture is built so the
+      first does not foreclose the second: proving the beachhead directly compounds the infrastructure thesis.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 13 — §6 NON-CIRCUMVENTION + BOOKING TOKENS ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 13">
+  <p class="eyebrow">Section 5 · Network &amp; business model</p>
+  <h1 style="font-size:22pt">Non-circumvention &amp; booking tokens</h1>
+  <p class="lead">Two mechanisms keep the network honest and give it an economic rhythm: the buyer stays masked
+    until a deal is firm (so a channel cannot be cut out), and reservation capacity is a scarce, tamper-evident
+    token that cascades down the trust chain.</p>
+
+  <h2>Non-circumvention</h2>
+  <p>Trust is enforced by <strong>visibility</strong>, not disclosure. An agent holding a booking has the unit
+    off-market; the developer and agency see <em>who holds it</em> but not necessarily the private buyer behind
+    it until a consented, sealed reveal. A non-circumvention declaration is sealed as evidence at the reveal
+    request — even if the reveal is later declined — so the introduction is on the tamper-evident trail. This is
+    the mechanism that protects an introducer's commission, which is precisely what gets channels to participate.</p>
+
+  <h2>The booking-token cascade</h2>
+  <p>VRX issues a developer a scarce quantity of <strong>booking tokens</strong> — reservation capacity. These
+    are handed or sold down the trust chain (developer → agency → agent), with a tamper-evident receipt at each
+    hand-off. An agent holding a token can secure a booking and take a deposit. Capacity is scarce <em>and</em>
+    reusable: a released or cancelled token returns up the chain. Tokens surface as "coins" in the wallet.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 170" role="img" width="680" height="170">
+        <title>Booking-token cascade</title>
+        <desc>VRX issues scarce booking tokens to a developer; the developer hands tokens down to an
+          agency with a tamper-evident receipt; the agency hands them to an agent; the agent burns one to
+          open a hold. A released or cancelled token returns up the chain.</desc>
+        <g font-family="Inter, sans-serif" font-size="10.5" text-anchor="middle" fill="#141a24">
+          <rect x="18" y="56" width="110" height="46" rx="10" fill="#e8effd" stroke="#2f6ef0"/><text x="73" y="76" font-weight="700">VRX</text><text x="73" y="92" font-size="8.5" fill="#2f6ef0">mints scarce</text>
+          <rect x="190" y="56" width="110" height="46" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/><text x="245" y="83" font-weight="700">Developer</text>
+          <rect x="362" y="56" width="110" height="46" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/><text x="417" y="83" font-weight="700">Agency</text>
+          <rect x="534" y="56" width="128" height="46" rx="10" fill="#e2f7f0" stroke="#0fae7e"/><text x="598" y="76" font-weight="700">Agent</text><text x="598" y="92" font-size="8.5" fill="#0fae7e">burns -&gt; hold</text>
+        </g>
+        <g stroke="#2f6ef0" stroke-width="2" fill="none">
+          <path d="M128 72 H190"/><polygon points="183,67 191,72 183,77" fill="#2f6ef0" stroke="none"/>
+          <path d="M300 72 H362"/><polygon points="355,67 363,72 355,77" fill="#2f6ef0" stroke="none"/>
+          <path d="M472 72 H534"/><polygon points="527,67 535,72 527,77" fill="#2f6ef0" stroke="none"/>
+        </g>
+        <g stroke="#b7791f" stroke-width="1.6" fill="none" stroke-dasharray="5 4">
+          <path d="M598 110 V130 H245 V102"/><polygon points="240,110 245,100 250,110" fill="#b7791f" stroke="none"/>
+        </g>
+        <text x="420" y="146" font-family="Inter, sans-serif" font-size="8.5" fill="#b7791f" text-anchor="middle">released / cancelled token returns up the chain (reusable)</text>
+        <circle r="5" fill="#e4b971" stroke="#b7791f" stroke-width="1" opacity="0">
+          <animateMotion dur="2.8s" repeatCount="indefinite" path="M128 72 H190 M300 72 H362 M472 72 H534"/>
+          <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.07;0.5;0.92;1" dur="2.8s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <figcaption>Figure 4 — Booking-token cascade. Scarce, reusable, tamper-evident at each hand-off; a burn opens a hold on-chain.</figcaption>
+  </figure>
+
+  <div class="callout">
+    <p class="k">Why scarcity is a design choice, not a sales gimmick</p>
+    <p>Making reservation capacity scarce and reusable is what makes a hold <em>mean something</em>: it cannot be
+      created freely, so holding a unit off-market carries a real cost, and releasing it returns capacity to the
+      network. On-chain this is backed by a non-transferable booking token with burn + rebirth, and the
+      exclusive-hold primitive grants one agency the sole right to book a unit for a bounded window that
+      auto-reverts to the shared pool at expiry.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 14 — §7 ECONOMIC LAYER: $VRX CREDIT (honest) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 14">
+  <p class="eyebrow">Section 6 · The economic layer</p>
+  <h1 style="font-size:22pt">$VRX — the in-system credit</h1>
+  <p class="lead">The economic layer has three objects: the $VRX credit ledger, booking tokens as reservation
+    capacity (above), and commission agreements with a settlement projection. All are privacy-preserving; none
+    puts money terms on-chain.</p>
+
+  <div class="callout warn">
+    <p class="k">Read this first — what $VRX is, and is not</p>
+    <p>$VRX is an <strong>in-system credit ledger</strong> used to meter and settle activity inside the VRX
+      network. It is <em>not</em> a listed or tradeable coin in VRX's story, not a token sale, not a liquid
+      asset, and it is not redeemable for cash. Supply is fixed and treasury-held. Today it is an off-chain
+      ledger; an on-chain NEP-141 fungible-token form is <span class="t-soon">planned</span> but does not change
+      what it is. Nothing in this document should be read as an offer of, or a market-value claim about, a token.</p>
+  </div>
+
+  <h2>The credit, precisely</h2>
+  <dl class="facts">
+    <dt>Supply</dt><dd>Fixed 200,000,000 — non-inflationary, treasury-held.</dd>
+    <dt>Operations</dt><dd>Claim from treasury · send to another account · spend inside the flow.</dd>
+    <dt>Form today</dt><dd><span class="t-live">built</span> — an off-chain ledger, usable within VRX. Not fiat, not redeemable for cash.</dd>
+    <dt>Planned</dt><dd><span class="t-soon">planned</span> — the on-chain NEP-141 fungible-token form.</dd>
+  </dl>
+
+  <h2>Why a credit at all</h2>
+  <p>A fixed, treasury-held credit gives the network a neutral internal unit to account for usage and settle
+    between participants without each pair needing a bilateral billing relationship. Because it is fixed and
+    non-inflationary, the accounting stays honest: credit moves between accounts, it is not conjured. Keeping it
+    off-chain today is deliberate — the credit model is chain-agnostic, so the on-chain form can be added later
+    without reworking how the network accounts for value.</p>
+
+  <h2>Booking tokens are distinct from $VRX</h2>
+  <p>A booking token is a unit of <em>capacity to reserve</em>, not a credit. It is scarce, cascades down the
+    trust chain, and returns on release (above). Keeping capacity (tokens) and accounting (credit) as separate
+    objects is what lets the network price reservation scarcity independently of how it settles money.</p>
+</section>
+
+<!-- ============================================================ SHEET 15 — §7 cont. COMMISSIONS, SETTLEMENT, REVENUE MODEL (DESIGN) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 15">
+  <p class="eyebrow">Section 6 · The economic layer</p>
+  <h1 style="font-size:22pt">Commissions, settlement &amp; the revenue model</h1>
+  <p class="lead">The last economic object is commission agreements with a settlement projection — and it is here
+    that the revenue model lives. Everything on this sheet is <strong>design</strong>; there is no realised
+    revenue to report.</p>
+
+  <h2>Commission agreements, privacy-preserving</h2>
+  <p>A commission agreement is anchored on-chain as <strong>only an opaque HMAC anchor</strong> of the off-chain
+    commission rulebook plus a version. The actual percentages, tiers, splits and amounts never appear on-chain.
+    Money compute and owed→paid tracking stay off-chain. On-rail settlement is <span class="t-soon">planned</span>;
+    VRX today records payments as a two-sided attestation ledger and <strong>does not move money in-app</strong>.
+    This is the structural reason VRX stays infrastructure rather than a payments institution.</p>
+
+  <h2>The revenue model — by design</h2>
+  <p>VRX's revenue model is a design, not a track record. It has three plausible rails, each flowing directly
+    from capabilities that are already built:</p>
+  <table>
+    <thead><tr><th>Rail</th><th>Flows from</th><th>Nature</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Network access / watchlist</strong></td><td>Vetted provisioning + the usage toll already in the contract.</td><td>Recurring access to the vetted network and its shared availability.</td></tr>
+      <tr><td><strong>Reservation capacity</strong></td><td>The scarce booking-token cascade.</td><td>Issuance / sale of reservation capacity down the trust chain.</td></tr>
+      <tr><td><strong>Settlement rail</strong></td><td>Commission anchoring + the payments ledger.</td><td>A take on deposit / settlement flow once the on-rail settlement ships (<span class="t-soon">planned</span>).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <p class="k">Honest framing of the projection</p>
+    <p>Where the product shows a "settlement projection", it is exactly that — a projection computed off-chain
+      from a deal's own terms, not realised revenue and not a forecast of VRX's income. VRX has published
+      <strong>no traction and no revenue figures</strong>, and this document invents none. The claim is that the
+      <em>model</em> is coherent and sits on built capabilities — not that it has been monetised yet.</p>
+  </div>
+
+  <p class="fn">The contract already carries a protocol usage toll + treasury + exempt-list mechanism, so the
+    technical means to meter and collect network usage exists on-chain today; turning that into priced products
+    is the commercial work ahead, done against live operators.</p>
+</section>
+
+<!-- ============================================================ SHEET 16 — §9 STATUS & ROADMAP (what's proven live) ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 16">
+  <p class="eyebrow">Section 7 · Status &amp; roadmap</p>
+  <h1 style="font-size:22pt">What is proven live, and what comes next</h1>
+  <p class="lead">Honest status for a diligence read. Built means it runs today on NEAR testnet and in the seeded
+    sandbox; the rest is labelled truthfully. The network is pre-revenue.</p>
+
+  <h2>Built today</h2>
+  <ul class="ticks">
+    <li>On-chain reservation / hold / exclusive / attestation registry, live on NEAR testnet.</li>
+    <li>Role-scoped dashboards for all participant types; browse → book → reserve → hold funnel.</li>
+    <li>Attested off-chain records; commission + settlement <em>projection</em>.</li>
+    <li>Booking tokens (scarce, cascading, tamper-evident) shown as "coins".</li>
+    <li>Sale-and-purchase contract authoring (payment plans, packages, concessions, termination terms).</li>
+    <li>Vetting / listing gate; change-notice + oversight; off-chain enforcement.</li>
+    <li>$VRX off-chain credit ledger (claim / send / spend).</li>
+    <li>Provenance-stamped imagery with a two-stage reveal (mechanism deliberately private — the moat).</li>
+    <li>Participation / node-license funnel + a live ecosystem map of the network.</li>
+  </ul>
+
+  <h2>In progress</h2>
+  <ul>
+    <li>Richer agency console (per-agent cards, chat, scheduling / dispatch).</li>
+    <li>Real-wallet verified sign-in — the seam is built, currently default-off for the wallet-less demo.</li>
+  </ul>
+
+  <h2>Planned</h2>
+  <ul>
+    <li>Real on-chain settlement rail; a secondary market (ownership transfer); multi-jurisdiction packs.</li>
+    <li>$VRX on-chain NEP-141 fungible-token form.</li>
+    <li>Determined-attacker-resistant provenance watermark and the read-side image analyzer.</li>
+    <li>Vertical expansion beyond real estate (cars, equipment, art).</li>
+  </ul>
+
+  <div class="callout">
+    <p class="k">The honesty anchor</p>
+    <p>The live portal at <span class="mono">vrx.poolo.org</span> is a seeded <em>sandbox</em> — write actions are
+      simulated so anyone can walk a deal end to end without a wallet. The contract on NEAR testnet
+      (<span class="mono">calculating-hand.testnet</span>) is the real, verifiable artifact. Path: testnet →
+      mainnet. No known privacy or correctness leak is open; deferred items are deliberate and sequenced behind a
+      dependency, documented in the standing security/privacy audit.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 17 — §8 LEGAL POSTURE + CONTACT ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper · 17">
+  <p class="eyebrow">Section 8 · Legal posture &amp; contact</p>
+  <h1 style="font-size:22pt">Legal posture, and how to reach us</h1>
+  <p class="lead">The posture is structural and deliberately narrow: VRX facilitates and seals; it does not
+    adjudicate and does not warrant enforceability. That narrowness is a feature for an investor, not a gap.</p>
+
+  <h2>What VRX is, legally</h2>
+  <ul class="ticks">
+    <li><strong>A facilitator and a sealer.</strong> VRX provides the private shared truth and the tamper-evident
+      record. It records that a reservation, agreement or change happened, and seals it.</li>
+    <li><strong>Not an adjudicator.</strong> VRX does not decide disputes or determine the outcome of a
+      disagreement between parties. It records the evidence (before/after, who was notified, the sealed
+      declarations) — never the dispute's resolution.</li>
+    <li><strong>Not a warrantor of enforceability.</strong> VRX does not warrant that any underlying contract is
+      legally enforceable. Parties' own terms and local law govern.</li>
+    <li><strong>Privacy-by-design.</strong> The architecture itself (opaque on-chain, masked off-chain) is the
+      primary privacy control, not a policy promise layered on afterwards.</li>
+  </ul>
+
+  <div class="callout">
+    <p class="k">Why the narrowness is a feature</p>
+    <p>By refusing to adjudicate or warrant, VRX stays a neutral infrastructure provider across jurisdictions and
+      asset classes. The sealed, append-only record it produces is designed to be <em>useful evidence to the
+      parties and their own counsel</em> — not a substitute for them. This is what keeps the primitive
+      domain-agnostic and multi-jurisdiction-ready (multi-jurisdiction packs are <span class="t-soon">planned</span>),
+      and it is what keeps VRX out of the regulatory category it would otherwise fall into by moving money or
+      ruling on disputes.</p>
+  </div>
+
+  <h3>The oversight view</h3>
+  <p>The Authority-Review role is the legal posture made concrete: an oversight party can confirm the
+    <em>vetted state</em> of the system without ever seeing private buyer data. Oversight of process, not
+    exposure of parties — the moat extends even to the regulator view.</p>
+
+  <hr class="rule" />
+
+  <h2>In one paragraph, to a cold reader</h2>
+  <p>VRX is the private source of truth for who reserved what. It turns a public blockchain's strength — a
+    tamper-evident, independently-verifiable record — into something usable for confidential commerce by putting
+    <em>only</em> opaque proof on-chain and keeping every meaningful detail in a vetted, access-controlled
+    off-chain layer. Real estate proves it; the primitive is domain-agnostic. It is early and pre-revenue, but
+    what it claims to have built, it has built. 312 is not 311.</p>
+
+  <div class="fn">
+    <p>Contact: <code>vrx@vettedrealty.com</code> — the business behind the primitive is Vetted Realty. This is
+      the public Investors &amp; Partners edition; a point-in-time security/privacy audit is available on request
+      to parties under evaluation.</p>
+  </div>
+</section>
+
+</body>
+</html>

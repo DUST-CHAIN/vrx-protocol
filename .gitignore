@@ -1,0 +1,71 @@
+# Dependencies / build output
+node_modules/
+dist/
+build/
+.next/
+out/
+vendor/
+*.tsbuildinfo
+
+# Rust / cargo-near build output
+target/
+*.wasm
+# ...EXCEPT committed test fixtures: old-layout wasm artifacts used as inputs to the
+# cross-version migrate roundtrip test (D13). These are test data, not build output.
+!contract/tests/fixtures/*.wasm
+# NOTE: Cargo.lock IS committed for the contract crate — it's a deployable
+# cdylib, so pinning exact dep versions gives reproducible builds. (Only
+# ignore Cargo.lock for pure libraries, which this is not.)
+
+# Env & secrets — never commit
+.env
+.env.*
+*.local
+# Owner/licensing details to paste into LICENSE/NOTICE — kept out of git (never commit PII).
+OWNER_DETAILS*.txt
+
+# Off-chain application store (raw agency profiles — D3: never on-chain, never committed).
+# File-backed JSON for the Lane-2 invite/approval backend (portal/lib/applications.ts, S17).
+portal/.data/
+
+# Dev god-mode local-signer keys (localnet :3030 ONLY, S147). Private keypairs for the walletless
+# dev signer — NEVER commit, even if .data/ is ever selectively force-tracked. Belt-and-suspenders.
+portal/.data/dev-keys.json
+**/dev-keys.json
+
+# MM mockup image generator output (blobs; regenerable from docs/MM_SCREENSHOT_PROMPTS.md)
+tools/mm-mockups/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude Code machine-local state (scheduled task locks, etc.) — not project code
+.claude/
+
+# Agent skills installed locally (e.g. Playwriter via `skills add`) — tooling, not project code.
+# `skills add` scatters dirs/symlinks for every agent it detects — ignore them all.
+.agents/
+skills/
+skills-lock.json
+.trae/
+.windsurf/
+
+# Playwright MCP scratch output (screenshots/snapshots from verification runs) — not project code
+.playwright-mcp/
+
+# Local pre-reseed backup of the demo world (S131 safety snapshot) — local only, not repo content
+portal/.data.bak/
+
+# INTERNAL MASTER whitepaper — the FULL-DETAIL source doc (includes the SECRET mechanism:
+# trace/forensic layer, exact hashing). NEVER commit — not to this repo (now PUBLIC) nor anywhere.
+# Only the derived PUBLIC whitepapers (whitepapers/public/) are shippable. (S224)
+whitepapers/_internal/
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json

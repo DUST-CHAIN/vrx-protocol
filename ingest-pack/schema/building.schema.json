@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vettedrealty/ingest-pack/building.schema.json",
+  "title": "VRX Ingest Pack — building.json",
+  "description": "One building. MIRRORS portal/lib/catalog.ts `Building` so the importer maps 1:1 (keep in lockstep when that type changes). Fields the building INHERITS from its complex (shared amenities, shared media) may be omitted here and filled at import. The unit inventory lives in the sibling units.csv (bulk), not inline.",
+  "type": "object",
+  "required": ["id", "name", "complexId", "type", "stories"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "URL-safe id; also the media folder key." },
+    "name": { "type": "string", "description": "Display name shown to users." },
+    "complexId": { "type": "string", "description": "Parent complex (inherits its shared media + amenities)." },
+    "companyId": { "type": "string", "description": "Legal entity, if it differs from the complex's." },
+
+    "tagline": { "type": "string" },
+    "developer": { "type": "string", "description": "Display label for the developer (brand). Trust derives from the tree above." },
+    "area": { "type": "string" },
+    "address": { "type": "string" },
+    "type": { "type": "string", "enum": ["High Rise", "Low Rise"], "description": "Free label in practice; enum documents the common values." },
+    "stories": { "type": "integer", "minimum": 1 },
+    "units": { "type": "integer", "minimum": 0, "description": "Total units per the fact sheet (may exceed the imported inventory)." },
+    "completion": { "type": "string", "description": "Human completion status/date." },
+    "constructionEnd": { "type": "string", "format": "date", "description": "ISO construction completion date." },
+
+    "reservationFeeUsd": { "type": "number", "minimum": 0 },
+    "bookingDepositUsd": { "type": "number", "minimum": 0 },
+    "maintenancePerSqmUsd": { "type": "number", "minimum": 0 },
+    "sinkingFundPerSqmUsd": { "type": "number", "minimum": 0 },
+    "transferFeePct": { "type": "string", "description": "As published, e.g. \"6.30%\"." },
+
+    "amenities": { "type": "array", "items": { "type": "string" }, "description": "Building-specific amenities ON TOP of the inherited complex ones." },
+
+    "unitTypes": {
+      "type": "array",
+      "description": "The unit-type families in this building. UnitType.key links to the per-unit `type` column in units.csv and to the floor-plan prefix (studio=STD, 1br=1BR, 2br=2BR, shop=SHP, duplex=DPX, penthouse=PTH).",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "sqmMin", "sqmMax"],
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string", "examples": ["studio", "1br", "2br", "shop", "duplex", "penthouse"] },
+          "label": { "type": "string", "examples": ["Studio", "1 Bedroom"] },
+          "sqmMin": { "type": "number", "minimum": 0 },
+          "sqmMax": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+
+    "termsRef": { "type": "string", "description": "Id of a reusable PaymentTerms block under terms/<id>.json used as the building default (units may override via units.csv)." },
+
+    "quota": {
+      "type": "object",
+      "description": "Foreign-freehold quota (D93) — OFF-CHAIN, present ONLY if the developer configured it. Ownership is the BUYER's (D95), so the quota is a building-level NUMBER against a % cap.",
+      "additionalProperties": false,
+      "properties": {
+        "sellableSqm": { "type": "number", "minimum": 0, "description": "Total sellable floor area for the cap calc (current authoritative figure)." },
+        "foreignQuotaPct": { "type": "number", "minimum": 0, "maximum": 100, "default": 49 },
+        "foreignSoldSqm": { "type": "number", "minimum": 0 },
+        "foreignCommittedSqm": { "type": "number", "minimum": 0 },
+        "localSoldSqm": { "type": "number", "minimum": 0 },
+        "stage": { "type": "string", "enum": ["presale", "built", "final"] },
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "freehold": { "type": "string" },
+            "company": { "type": "string" },
+            "private": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

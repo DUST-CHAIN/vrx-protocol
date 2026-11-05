@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VRX â€” Technical / Protocol White Paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="vrx-paper.css" />
+</head>
+<body>
+
+<!-- screen-only print helper -->
+<div class="toolbar no-print">
+  <span>A4 Â· print at 100% Â· Technical</span>
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
+
+<!-- ============================================================ SHEET 1 â€” COVER ============================================================ -->
+<section class="sheet" data-footer="VRX Â· Technical / Protocol edition">
+  <div class="cover">
+    <div class="top">
+      <div class="brand-row">
+        <svg class="logo" viewBox="0 0 48 48" aria-label="VRX">
+          <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" fill="none" stroke="#2f6ef0" stroke-width="2.5"/>
+          <path d="M16 17 L24 33 L32 17" fill="none" stroke="#0fae7e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">VRX</span>
+        <span class="classification public" style="margin-left:auto">Public</span>
+      </div>
+    </div>
+
+    <div class="mid">
+      <p class="eyebrow">Technical / Protocol White Paper</p>
+      <h1>A private, on-chain<br/>reservation primitive</h1>
+      <p class="subtitle">The architecture, the NEAR contract, and the privacy model of a reservation
+        registry that proves <em>who reserved what</em> without writing prices, terms, or personal data
+        to the chain â€” written for protocol engineers.</p>
+      <div style="margin-top:16pt"><span class="seal">Vetted network</span></div>
+    </div>
+
+    <div class="bot">
+      <hr class="rule" />
+      <div class="meta">
+        <div>Document<b>Technical / protocol edition</b></div>
+        <div>Status<b>Testnet Â· calculating-hand.testnet</b></div>
+        <div>Contract<b>Rust Â· near-sdk 5.26.1 Â· state V1â†’V7</b></div>
+        <div>As of<b>November 2026</b></div>
+      </div>
+      <div class="callout" style="margin-top:12pt">
+        <p class="k">Scope &amp; honesty</p>
+        <p>This edition goes deep on architecture, the contract's state machine and migrations, the
+          public privacy model, and the method surface. Status language is literal:
+          <span class="t-live">built</span> runs today; <span class="t-soon">in&nbsp;progress /
+          planned</span> is designed or partially built but not yet usable as described. Facts are
+          taken from the real contract source and the standing security audit â€” nothing here is
+          aspirational unless it is tagged as such.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 2 â€” ABSTRACT ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 2">
+  <p class="eyebrow">Abstract</p>
+  <h1 style="font-size:22pt">In one page</h1>
+  <p class="lead">VRX is a reservation primitive: a callable NEAR smart contract that records
+    <em>who reserved what</em>, paired with an off-chain portal that carries everything the chain must
+    not â€” identities, prices, specifications and deal terms.</p>
+
+  <p>An operator with <strong>unique, non-substitutable inventory</strong> (unit 312 is not unit 311)
+    needs to feed live availability to many sales teams and agencies who do not trust one another, and
+    let them browse, book, reserve, take a deposit and hold â€” without double-booking, without leaking the
+    commercial or personal details of a deal, and without a channel being able to go around the operator.
+    A public chain gives tamper-evidence and independent verifiability but, used naÃ¯vely, publishes the
+    very terms that make a deal confidential. A single vendor database gives confidentiality but
+    centralizes trust and sees everything.</p>
+
+  <p>VRX's design answer is a strict <strong>split</strong>. The chain holds only opaque hashes and
+    neutral account ids: it proves <em>that</em> a reservation exists and <em>who</em> holds it, and
+    nothing else. The meaning â€” the <em>what</em>, the <em>how-much</em>, the <em>with-whom</em> â€” lives
+    off-chain under server-side authorization and field-level masking. Privacy is therefore not a feature
+    bolted on; it is a property of <em>what is and is not written to the ledger</em>.</p>
+
+  <div class="callout vetted">
+    <p class="k">Why it is domain-agnostic</p>
+    <p>Real estate (off-plan property) is the beachhead and the working proof. But the contract never
+      "knows" it is real estate â€” every real-world reference is an opaque SHA-256 hash â€” so the same
+      primitive serves cars, livestock, equipment, event slots: any Class-A, non-substitutable inventory.
+      The contract models <em>availability and holds over keys it cannot read</em>.</p>
+  </div>
+
+  <dl class="facts">
+    <dt>On-chain</dt><dd>Reservation / hold / exclusive / attestation registry â€” opaque hashes + neutral ids only.</dd>
+    <dt>Off-chain</dt><dd>The portal: role-scoped apps, sealed records, field masking, consent ceremonies.</dd>
+    <dt>Contract</dt><dd>Rust / near-sdk 5.26.1, <code>#[near]</code> macros; state schema V1 â†’ V7 via borsh-safe migrations.</dd>
+    <dt>Events</dt><dd>NEP-297 structured <code>EVENT_JSON</code> logs (standard <code>vrx</code>, v1.0.0) â€” opaque payloads only.</dd>
+    <dt>Credit</dt><dd>$VRX â€” fixed 200M, treasury-held; off-chain ledger today, NEP-141 planned.</dd>
+    <dt>Posture</dt><dd>VRX facilitates and seals; it does not adjudicate disputes or warrant enforceability.</dd>
+  </dl>
+</section>
+
+<!-- ============================================================ SHEET 3 â€” Â§1 THE PROBLEM ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 3">
+  <p class="eyebrow">Section 1</p>
+  <h1 style="font-size:22pt">The problem</h1>
+  <p class="lead">Selling scarce, one-of-a-kind inventory through many channels that do not trust each
+    other breaks the tools everyone already uses. Three failures compound.</p>
+
+  <h3>1 â€” Double-booking a unique thing</h3>
+  <p>When inventory is fungible (seats, generic SKUs) an oversell is an inconvenience. When each item is
+    unique â€” a specific apartment, a specific pedigree animal, a specific machine â€” two channels reserving
+    "312" at once is a hard conflict that damages trust and, often, a contract. The market needs
+    <strong>one authoritative answer</strong> to "is this exact unit still available?" that every channel
+    reads the same way, in real time.</p>
+
+  <h3>2 â€” Privacy leakage</h3>
+  <p>The naÃ¯ve fixes leak. A shared spreadsheet or a single vendor database exposes who is buying what, at
+    what price, through whom â€” to the vendor and often to rival channels. Putting the registry on a public
+    blockchain is worse: now prices, parties and terms are world-readable forever. The
+    commercially-sensitive and personal details of a deal are exactly what must <em>not</em> be shared to
+    get the shared truth.</p>
+
+  <h3>3 â€” Circumvention / disintermediation</h3>
+  <p>A channel that learns the end-buyer and the operator can be tempted to cut the introducer out and deal
+    direct. The counter-measure â€” hiding the buyer's identity until a deal is firm â€” is itself a privacy
+    problem, and it must be reconciled with the operator's legitimate need to confirm a booking.</p>
+
+  <div class="callout">
+    <p class="k">The tension in one line</p>
+    <p>Everyone needs to agree on <em>the same reservation state</em>, while almost no one is entitled to
+      see <em>the same reservation details</em>. A single store that satisfies the first requirement
+      usually violates the second. VRX exists to hold both at once â€” and the whole architecture is a
+      consequence of that single constraint.</p>
+  </div>
+
+  <h3>Who feels it first</h3>
+  <p>Off-plan real estate is the sharpest case and VRX's beachhead: a developer releases limited units to
+    multiple agencies, each with multiple agents, selling to buyers who must stay confidential â€” with
+    deposits, commissions and completion terms attached. Every failure above is routine there. The same
+    shape recurs anywhere inventory is scarce, identified, and sold through intermediaries â€” which is why
+    the on-chain layer is written to know nothing about real estate at all.</p>
+</section>
+
+<!-- ============================================================ SHEET 4 â€” Â§2 WHAT VRX IS ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 4">
+  <p class="eyebrow">Section 2</p>
+  <h1 style="font-size:22pt">What VRX is</h1>
+  <p class="lead">A callable NEAR smart contract â€” the reservation and hold registry â€” plus an off-chain
+    portal: the role-scoped apps each participant uses. Together they are the reservation primitive.</p>
+
+  <h2>The primitive, precisely</h2>
+  <p>VRX records reservations over <strong>non-substitutable</strong> inventory. Its on-chain state is
+    deliberately thin. A unit (a <code>tile</code>) is <code>open</code>, on <code>hold</code>,
+    <code>closed</code>, or <code>done</code> â€” encoded as the small integers <code>0/1/2/3</code>. A
+    <code>claim</code> is open, accepted, declined, offered-an-alternative, or confirmed
+    (<code>0/1/2/3/4</code>). An exclusive window is held by one agency or it is not. Everything that would
+    identify the unit, the buyer, the price or the terms is an opaque hash. The contract does not model
+    "apartment" or "car" â€” it models availability and holds over keys it cannot read.</p>
+
+  <div class="callout vetted">
+    <p class="k">312 &ne; 311</p>
+    <p>Value in this system scales with the worth of the <em>specific</em> reserved item. The primitive's
+      whole reason to exist is that substituting one unit for another is not acceptable â€” so the registry
+      tracks each unit individually, keyed by an opaque <code>unit_key</code>, and a hold on one is never a
+      hold on another.</p>
+  </div>
+
+  <h2>The four pillars, wrapped in vetting</h2>
+  <table>
+    <thead><tr><th>Pillar</th><th>What it is</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Availability</strong></td><td>The foundation â€” what inventory exists and is open.</td><td class="t-live">built</td></tr>
+      <tr><td><strong>Communications</strong></td><td>Availability made useful: conveyed to the market, with channels + change-notice.</td><td class="t-live">built</td></tr>
+      <tr><td><strong>Payments</strong></td><td>Communication turned into action â€” deposits, settlement projection.</td><td class="t-live">built / <span class="t-soon">rail planned</span></td></tr>
+      <tr><td><strong>Accounting</strong></td><td>Every payment tracked (two-sided attestation ledger; VRX does not move money in-app).</td><td class="t-live">built</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Vetting</strong> ties the four together: VRX vets the whole system so participants who do not
+    trust each other can transact on one shared truth. Vetting is human-led (see Â§6); the chain only
+    anchors the <em>fact and version</em> of a sign-off, never its contents.</p>
+
+  <dl class="facts">
+    <dt>On-chain</dt><dd>reservation / hold / exclusive / attestation state (opaque)</dd>
+    <dt>Off-chain</dt><dd>the four pillars' working surfaces + all meaning</dd>
+    <dt>Binding</dt><dd>every on-chain record anchors an off-chain sealed record by its hash</dd>
+  </dl>
+</section>
+
+<!-- ============================================================ SHEET 5 â€” Â§2.5 LANDSCAPE ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 5">
+  <p class="eyebrow">Section 2.5</p>
+  <h1 style="font-size:22pt">Where it sits</h1>
+  <p class="lead">Why nothing already in the market does this. Stated plainly â€” the moat is a design choice
+    others have not made, not a claim of being uniquely clever.</p>
+
+  <h2>Three existing approaches, and where each leaks</h2>
+  <table>
+    <thead><tr><th>Approach</th><th>Gives you</th><th>What it costs</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Generic booking / CRM software</strong></td>
+        <td>A shared calendar and pipeline.</td>
+        <td>Centralizes trust in one vendor's database; the vendor (and often rival channels) can see who
+          buys what at what price. No independently-provable record; the operator still owns the single
+          point of truth and failure.</td>
+      </tr>
+      <tr>
+        <td><strong>NaÃ¯ve on-chain listing</strong></td>
+        <td>A tamper-evident, independently-verifiable record.</td>
+        <td>Publishes prices, parties and terms to the world forever. The confidentiality that makes a deal
+          a deal is destroyed to gain the shared truth.</td>
+      </tr>
+      <tr>
+        <td><strong>Point-to-point / off-platform deals</strong></td>
+        <td>Privacy by obscurity.</td>
+        <td>No shared availability, so double-booking and circumvention are endemic; no neutral record when
+          a dispute arises.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p class="k">VRX's position</p>
+    <p>VRX takes the tamper-evident, independently-verifiable record from the on-chain approach and the
+      confidentiality from the off-platform approach, and reconciles them with a <strong>split</strong>:
+      the chain carries proof-of-state over opaque keys; a private, access-controlled off-chain layer
+      carries the meaning. The moat is not a faster database â€” it is the discipline of <em>what is never
+      written to the ledger at all</em>, plus a vetted operator network layered on top.</p>
+  </div>
+
+  <h2>Honest limits of the claim</h2>
+  <ul class="ticks">
+    <li>The off-chain layer's confidentiality rests on <strong>server-side authorization</strong>, not
+      cryptography â€” VRX must be trusted to run it correctly. The audit (Â§5) is how that trust is made
+      checkable.</li>
+    <li>On-chain opacity is absolute by construction, but it only protects what lives on-chain; a leak, if
+      it happened, would come from the off-chain layer â€” which is where almost all the engineering
+      attention goes.</li>
+    <li>VRX is not the only system splitting on/off chain. Its specific contribution is the
+      reservation-primitive framing, the vetted network, and a provenance/forensic layer â€” not the generic
+      idea of anchoring a hash.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ SHEET 6 â€” Â§3 ARCHITECTURE: THE SPLIT ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 6">
+  <p class="eyebrow">Section 3 Â· Architecture</p>
+  <h1 style="font-size:22pt">The on-chain / off-chain split</h1>
+  <p class="lead">One rule governs the whole system: <strong>meaning never touches the chain</strong>. The
+    figure shows what lives where, and the one-way binding between them.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 300" role="img" width="680" height="300">
+        <title>VRX on-chain / off-chain split</title>
+        <desc>The off-chain portal holds identities, prices, specifications, terms and sealed records.
+          Each sealed record's hash is anchored into the on-chain registry, which holds only opaque
+          hashes, neutral account ids and state codes. The anchor is one-way: the chain cannot recover
+          meaning from the hash.</desc>
+
+        <!-- OFF-CHAIN panel -->
+        <g font-family="Inter, sans-serif">
+          <rect x="18" y="40" width="300" height="236" rx="12" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="34" y="64" font-size="12" font-weight="700" fill="#141a24">OFF-CHAIN Â· the portal</text>
+          <text x="34" y="80" font-size="9.5" fill="#6b7689">meaning lives here, access-controlled</text>
+          <g font-size="10" fill="#3a4559">
+            <rect x="34" y="94" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="111">Identities Â· buyer PII Â· nationality Â· ID refs</text>
+            <rect x="34" y="126" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="143">Prices Â· payment plans Â· commission rulebooks</text>
+            <rect x="34" y="158" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="175">Specifications Â· S&amp;P terms Â· chat Â· images</text>
+            <rect x="34" y="190" width="268" height="26" rx="6" fill="#ffffff" stroke="#e7ecf4"/><text x="46" y="207">Sealed records (salted) + hash-chained logs</text>
+          </g>
+          <text x="34" y="244" font-size="9.5" fill="#0fae7e" font-weight="600">server-side authz + field masking</text>
+          <text x="34" y="260" font-size="9.5" fill="#6b7689">seal = salted SHA-256 over the record</text>
+        </g>
+
+        <!-- ON-CHAIN panel -->
+        <g font-family="Inter, sans-serif">
+          <rect x="400" y="40" width="262" height="236" rx="12" fill="#eef2f8" stroke="#2f6ef0"/>
+          <text x="416" y="64" font-size="12" font-weight="700" fill="#141a24">ON-CHAIN Â· NEAR contract</text>
+          <text x="416" y="80" font-size="9.5" fill="#6b7689">state only â€” opaque, world-readable</text>
+          <g font-size="10" fill="#3a4559">
+            <rect x="416" y="94" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="111">unit_key Â· request_hash (opaque)</text>
+            <rect x="416" y="126" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="143">status 0/1/2/3 Â· account ids</text>
+            <rect x="416" y="158" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="175">commission_hash Â· seal_hash anchors</text>
+            <rect x="416" y="190" width="230" height="26" rx="6" fill="#ffffff" stroke="#d8dfeb"/><text x="428" y="207">holds Â· exclusives Â· attestations</text>
+          </g>
+          <text x="416" y="244" font-size="9.5" fill="#2f6ef0" font-weight="600">no PII Â· no price Â· no terms â€” ever</text>
+          <text x="416" y="260" font-size="9.5" fill="#6b7689">a scraper sees state, never meaning</text>
+        </g>
+
+        <!-- one-way anchor arrow -->
+        <g>
+          <path d="M318 170 H400" stroke="#2f6ef0" stroke-width="2.5" fill="none"/>
+          <polygon points="392,164 402,170 392,176" fill="#2f6ef0"/>
+          <text x="359" y="160" font-family="Inter, sans-serif" font-size="9" fill="#2f6ef0" text-anchor="middle" font-weight="700">anchor (hash)</text>
+          <path d="M359 182 l-6 10 M359 182 l6 10" stroke="#d64545" stroke-width="2" fill="none"/>
+          <text x="359" y="206" font-family="Inter, sans-serif" font-size="8" fill="#d64545" text-anchor="middle">one-way Â· irreversible</text>
+        </g>
+
+        <!-- travelling hash token (SMIL enhancement; invisible at t=0) -->
+        <circle r="5" fill="#2f6ef0" opacity="0">
+          <animateMotion dur="2.4s" repeatCount="indefinite" path="M318 170 H400"/>
+          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="2.4s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <figcaption>Figure 1 â€” The split. Off-chain records are sealed; only their hashes are anchored on-chain. The binding is one-way.</figcaption>
+  </figure>
+
+  <div class="callout">
+    <p class="k">Why one-way matters</p>
+    <p>An anchored <code>seal_hash</code> lets anyone later prove a specific off-chain record is the one
+      that was committed (re-seal it, compare). It never lets anyone recover the record from the hash.
+      Tamper-evidence without disclosure is the whole trick â€” and it is the property every design decision
+      downstream protects.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 7 â€” Â§3 CONTRACT STATE V1â†’V7 ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 7">
+  <p class="eyebrow">Section 3 Â· Architecture</p>
+  <h1 style="font-size:22pt">Contract state &amp; migrations</h1>
+  <p class="lead">The contract (Rust, near-sdk 5.26.1, <code>#[near]</code> macros) has grown through
+    seven state schema versions, each added by an owner-only, borsh-safe migration that never touches an
+    existing record.</p>
+
+  <h2>What each version added</h2>
+  <table>
+    <thead><tr><th>Version</th><th>Added</th><th>Shape</th></tr></thead>
+    <tbody>
+      <tr><td><strong>V1</strong></td><td>Core registry â€” nodes, orgs, peers, gates, tiles, claims, queue.</td><td>base maps</td></tr>
+      <tr><td><strong>V1â†’V2</strong></td><td>Booking-pass rebirth lineage.</td><td><code>pass_links</code> sidecar</td></tr>
+      <tr><td><strong>V2â†’V3</strong></td><td>On-chain hold expiry + a configurable hold window.</td><td><code>hold_expiry</code> sidecar + <code>hold_window_ns</code></td></tr>
+      <tr><td><strong>V3â†’V4</strong></td><td>Commission <code>agreements</code> (anchor only).</td><td><code>agreements</code> map</td></tr>
+      <tr><td><strong>V4â†’V5</strong></td><td>Protocol usage toll + treasury + exempt list.</td><td><code>toll_yocto</code> Â· <code>treasury</code> Â· <code>exempt</code></td></tr>
+      <tr><td><strong>V5â†’V6</strong></td><td>Temporary exclusives (sole-right-to-book window).</td><td><code>exclusives</code> map</td></tr>
+      <tr><td><strong>V6â†’V7</strong></td><td>Vetting / sign-off attestations (on-chain provable approval).</td><td><code>attestations</code> map</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The borsh-safe migration pattern</h3>
+  <p>Borsh is order-based and ignores field names, so two rules keep migrations safe. First: <strong>never
+    append a field to a struct that is stored as a value</strong> â€” that would shift the byte layout and
+    break decode on every old entry. Instead, extra per-key data lives in a <strong>sidecar map</strong>
+    (that is what <code>pass_links</code>, <code>hold_expiry</code> and <code>exclusives</code> are).
+    Second: each migration reads the prior versioned struct, <em>carries every existing map over
+    unchanged</em>, and only creates the one new top-level map empty. Each is owner-gated â€” the caller must
+    equal the <code>owner</code> recorded in the pre-migration state â€” and emits a <code>Migrate</code>
+    event.</p>
+
+  <pre><span class="c">// migrate7 (V6 -> V7): add the empty `attestations` map; carry everything else over.</span>
+<span class="c">// Owner-only, pure-additive, borsh-safe â€” no existing record is touched.</span>
+<span class="f">#[init(ignore_state)]</span>
+<span class="k">pub fn</span> <span class="f">migrate7</span>() -&gt; Self {
+    <span class="k">let</span> v6: <span class="f">ContractV6</span> = env::<span class="f">state_read</span>().<span class="f">expect</span>(err::NO_V6_STATE);
+    <span class="f">assert_eq!</span>(env::<span class="f">predecessor_account_id</span>(), v6.owner, <span class="s">"{}"</span>, err::NOT_OWNER);
+    <span class="n">Event</span>::Migrate { from: <span class="n">6</span>, to: <span class="n">7</span> }.<span class="f">emit</span>();
+    Self {
+        owner: v6.owner, nodes: v6.nodes, orgs: v6.orgs, peers: v6.peers,
+        gates: v6.gates, tiles: v6.tiles, claims: v6.claims, queue: v6.queue,
+        <span class="c">/* ...passes, pass_links, hold_expiry, agreements, toll, treasury, exempt, exclusives... */</span>
+        attestations: UnorderedMap::<span class="f">new</span>(SK::At),  <span class="c">// the only new map, created empty</span>
+    }
+}</pre>
+
+  <div class="callout">
+    <p class="k">Field-name discipline</p>
+    <p>Source field names are readable; each pins its original compact JSON key via
+      <code>#[serde(rename)]</code>, so the view-API wire shape is frozen while the code stays legible.
+      Because borsh ignores names, storage layout is byte-identical across the rename â€” but
+      <em>never reorder a field</em>, since that <em>would</em> change the byte layout.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 8 â€” Â§3 ON-CHAIN DATA SHAPES ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 8">
+  <p class="eyebrow">Section 3 Â· Architecture</p>
+  <h1 style="font-size:22pt">The opaque data shapes</h1>
+  <p class="lead">What the contract actually stores. Every real-world identifier is a <code>String</code>
+    that holds a hash; the contract treats them as opaque keys and never interprets them.</p>
+
+  <h2>The top-level maps (V7)</h2>
+  <table>
+    <thead><tr><th>Map</th><th>Key</th><th>Carries</th></tr></thead>
+    <tbody>
+      <tr><td><code>nodes</code></td><td>account id</td><td>a seller/operator + its <code>instance_hash</code></td></tr>
+      <tr><td><code>orgs</code></td><td>account id</td><td>an agency + an opaque <code>org_ref</code></td></tr>
+      <tr><td><code>peers</code></td><td>account id</td><td>an agent + an opaque <code>agent_ref</code>, scoped to an org</td></tr>
+      <tr><td><code>gates</code></td><td><code>"{node}:{org}"</code></td><td>access scope = a set of opaque scope hashes</td></tr>
+      <tr><td><code>tiles</code></td><td><code>unit_key</code> (hash)</td><td>status <code>0/1/2/3</code> + an <code>integrity_hash</code></td></tr>
+      <tr><td><code>claims</code></td><td><code>request_id</code></td><td>status <code>0/1/2/3/4</code> + <code>request_hash</code> anchors</td></tr>
+      <tr><td><code>agreements</code></td><td><code>"{node}:{org}"</code></td><td>an opaque <code>commission_hash</code> + a version</td></tr>
+      <tr><td><code>exclusives</code></td><td><code>unit_key</code></td><td>which org holds the sole-book window, and until when</td></tr>
+      <tr><td><code>hold_expiry</code></td><td><code>unit_key</code></td><td>hold expiry timestamp (ns); absent = no timed hold</td></tr>
+      <tr><td><code>attestations</code></td><td><code>"{node}:{building_hash}"</code></td><td>a sealed sign-off anchor (<code>seal_hash</code>, kind, approver)</td></tr>
+      <tr><td><code>passes</code></td><td>pass id (u64)</td><td>a non-transferable booking token + its owner / lineage</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout vetted">
+    <p class="k">The invariant that makes it domain-agnostic</p>
+    <p>Note what is <em>absent</em>: no field names like "price", "buyer", "address", "bedrooms". The
+      storage layer has no vocabulary for real estate â€” only hashes, account ids, small status integers,
+      timestamps and versions. The same contract, unchanged, backs a car dealership or a livestock
+      registry; the meaning of a <code>unit_key</code> is decided entirely off-chain.</p>
+  </div>
+
+  <pre><span class="c">// An attestation anchors a sealed off-chain sign-off â€” the ONLY content bytes are a hash.</span>
+<span class="k">pub fn</span> <span class="f">attest</span>(building_hash: <span class="f">String</span>, kind: <span class="f">u8</span>,
+              seal_hash: <span class="f">String</span>, approved_by: <span class="f">AccountId</span>, approver_role: <span class="f">u8</span>) {
+    <span class="c">// no price, no name, no terms â€” just the opaque proof the sign-off happened,</span>
+    <span class="c">// keyed "{node}:{building_hash}". VRX later ratifies it (ratify_attestation).</span>
+}</pre>
+</section>
+
+<!-- ============================================================ SHEET 9 â€” Â§3 DATA FLOW END TO END ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 9">
+  <p class="eyebrow">Section 3 Â· Architecture</p>
+  <h1 style="font-size:22pt">Data flow, end to end</h1>
+  <p class="lead">Follow one booking from live availability to a confirmed hold, watching where meaning
+    stays and only a hash moves.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 250" role="img" width="680" height="250">
+        <title>VRX reservation flow</title>
+        <desc>An operator publishes availability; an agency's agent books a unit for a buyer privately;
+          a deposit is taken and the unit is held on-chain; the developer confirms. Terms, price and
+          buyer identity stay off-chain and sealed; only an opaque seal and state are anchored.</desc>
+
+        <g font-family="Inter, sans-serif" font-size="11" fill="#141a24" text-anchor="middle">
+          <rect x="14" y="40" width="120" height="58" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="74" y="64" font-weight="700">Operator</text><text x="74" y="82" fill="#6b7689" font-size="9.5">stamps tile = open</text>
+
+          <rect x="178" y="40" width="120" height="58" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="238" y="64" font-weight="700">Agent</text><text x="238" y="82" fill="#6b7689" font-size="9.5">opens claim</text>
+
+          <rect x="342" y="40" width="120" height="58" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="402" y="64" font-weight="700">Hold</text><text x="402" y="82" fill="#b7791f" font-size="9.5">deposit Â· timed</text>
+
+          <rect x="506" y="40" width="150" height="58" rx="10" fill="#e2f7f0" stroke="#0fae7e"/>
+          <text x="581" y="64" font-weight="700">Developer</text><text x="581" y="82" fill="#0fae7e" font-size="9.5">confirms claim</text>
+        </g>
+
+        <g stroke="#2f6ef0" stroke-width="2" fill="none">
+          <path d="M134 69 H178"/><polygon points="171,64 179,69 171,74" fill="#2f6ef0" stroke="none"/>
+          <path d="M298 69 H342"/><polygon points="335,64 343,69 335,74" fill="#2f6ef0" stroke="none"/>
+          <path d="M462 69 H506"/><polygon points="499,64 507,69 499,74" fill="#2f6ef0" stroke="none"/>
+        </g>
+
+        <!-- travelling token, invisible at t=0 -->
+        <circle r="5" fill="#2f6ef0" opacity="0">
+          <animateMotion dur="3s" repeatCount="indefinite" path="M134 69 H178 M298 69 H342 M462 69 H506"/>
+          <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.06;0.5;0.92;1" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <!-- hold pulse, invisible at t=0 -->
+        <circle cx="402" cy="69" r="26" fill="none" stroke="#b7791f" stroke-width="2" opacity="0">
+          <animate attributeName="r" values="26;40;26" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0.45;0" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- on-chain / off-chain lanes -->
+        <g font-family="Inter, sans-serif" font-size="9">
+          <rect x="14" y="128" width="642" height="40" rx="8" fill="#eef2f8" stroke="#2f6ef0"/>
+          <text x="26" y="146" fill="#2f6ef0" font-weight="700">ON-CHAIN</text>
+          <text x="26" y="160" fill="#6b7689">stamp_tile Â· open_claim(request_hash) Â· reply/confirm Â· hold status + expiry â€” all opaque</text>
+
+          <rect x="14" y="176" width="642" height="52" rx="8" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="26" y="194" fill="#141a24" font-weight="700">OFF-CHAIN</text>
+          <text x="26" y="208" fill="#6b7689">buyer identity Â· price Â· payment plan Â· S&amp;P terms Â· commission rulebook â€” sealed + masked</text>
+          <text x="26" y="221" fill="#6b7689">reveal of the buyer to the developer is a separate, consented, logged ceremony (Â§4)</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Figure 2 â€” One booking, end to end. Only opaque keys + state cross into the on-chain lane.</figcaption>
+  </figure>
+
+  <h3>The step sequence</h3>
+  <ol>
+    <li>Operator <code>stamp_tile(unit_key, 0, integrity_hash)</code> â†’ the unit is <code>open</code>.</li>
+    <li>Agent <code>open_claim</code> (or <code>burn_pass_hold</code> on the booking-token path) â†’ an opaque <code>request_hash</code> anchors the off-chain request; the unit moves to <code>hold</code> with a timed expiry in <code>hold_expiry</code>.</li>
+    <li>Off-chain: deposit recorded, buyer profile sealed, masked to the developer by default.</li>
+    <li>Developer <code>reply_claim</code> / <code>confirm_claim</code> â†’ claim status advances; a consented reveal of the buyer is a separate ceremony.</li>
+    <li>On completion <code>finalize_tile</code> â†’ <code>done</code>; an expired hold auto-releases back to <code>open</code> (via <code>release</code> / expiry).</li>
+  </ol>
+</section>
+
+<!-- ============================================================ SHEET 10 â€” Â§4 PRIVACY MODEL ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 10">
+  <p class="eyebrow">Section 4 Â· Privacy</p>
+  <h1 style="font-size:22pt">The privacy model</h1>
+  <p class="lead">Two distinct protections, applied per surface: on-chain opacity by construction, and
+    off-chain access control by the server. This section is the public, capability-and-design level of the
+    model.</p>
+
+  <h2>Protection 1 â€” on-chain opacity (by construction)</h2>
+  <p>Everything on the contract is an opaque SHA-256 hash (<code>unit_key</code>, <code>request_hash</code>,
+    <code>seal_hash</code>, <code>commission_hash</code>) plus neutral account ids and status integers. A
+    chain scraper sees <em>"account X holds an exclusive on hash 07f2â€¦"</em> â€” state, never meaning. The
+    building, unit, price, party and terms cannot be derived from the chain. This moat holds by design and
+    needs no further work.</p>
+
+  <h3>The seal construction (public part)</h3>
+  <p>A <strong>seal</strong> is a salted SHA-256 over an off-chain record. The salt is per-record; an
+    optional global <em>pepper</em> is held separately from the record store, so a breach that leaks the
+    store alone cannot re-derive seals. A seal is a commitment, not an encryption key â€” it proves a
+    specific record is the one that was committed (re-seal and compare) and reveals nothing about the
+    record's contents. Where a real-world identifier must be a <em>stable</em> opaque key (so two
+    references to the same thing collide deterministically), the key is an <strong>HMAC</strong> under a
+    server-held key rather than a bare hash â€” same opacity, with unforgeability against an outsider who
+    does not hold the key.</p>
+
+  <h2>Protection 2 â€” off-chain access control (by the server)</h2>
+  <p>The plaintext that carries meaning lives off-chain, protected by <strong>server-side authorization +
+    field-level masking</strong>, not by cryptography. The engineering question for every
+    counterparty-facing surface is therefore: <em>is this read scoped to a caller entitled to it, and
+    masked server-side before the wire?</em> A UI blur is theatre; masking happens on the server, so the
+    plaintext never reaches the browser for a masked field.</p>
+
+  <h3>Supporting mechanisms (built)</h3>
+  <ul class="ticks">
+    <li><strong>Salted seals</strong> (<code>lib/seal.ts</code>) â€” tamper-evidence without reversibility, as above.</li>
+    <li><strong>Encryption-at-rest</strong> for identity-document images â€” a per-file data-encryption key under an offline-sealed key-encryption key.</li>
+    <li><strong>Append-only, hash-chained chat</strong> (<code>lib/channels.ts</code>) â€” each message folds the prior record's hash into its own, so editing or reordering a past message breaks the chain and is detectable.</li>
+    <li><strong>Provenance-stamped imagery</strong> â€” a leaked sensitive image is traceable back to the recipient it was served to. The stamping mechanism is deliberately private and is not described in this paper.</li>
+  </ul>
+
+  <h3>What an outsider can and cannot see</h3>
+  <table>
+    <thead><tr><th>Observer</th><th>Can see</th><th>Cannot see</th></tr></thead>
+    <tbody>
+      <tr><td>Chain scraper</td><td>That a reservation/hold/exclusive exists; which account holds it; status + version.</td><td>Unit, building, price, party, terms â€” anything meaningful.</td></tr>
+      <tr><td>A rival channel</td><td>Shared availability (open/held).</td><td>Another channel's buyer, price or terms.</td></tr>
+      <tr><td>Authority-review role</td><td>The <em>vetted state</em> for oversight.</td><td>Private buyer data â€” the moat extends to the regulator view.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================ SHEET 11 â€” Â§5 THREAT MODEL ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 11">
+  <p class="eyebrow">Section 5 Â· Audit</p>
+  <h1 style="font-size:22pt">Threat model &amp; invariants</h1>
+  <p class="lead">The bar VRX judges itself against, drawn from the standing security/privacy audit. The
+    method: test the <em>promises</em>, hunt <em>contradictions</em> at the seams. These are the checks an
+    external auditor should reproduce.</p>
+
+  <h2>Buyer-PII surfaces (the core map)</h2>
+  <table>
+    <thead><tr><th>Surface</th><th>Encrypted at rest?</th><th>Masked to counterparty?</th><th>Reads plaintext</th></tr></thead>
+    <tbody>
+      <tr><td>A. Agent roster <span class="chip">lib/buyers.ts</span></td><td>sealed only</td><td>never cross-shown</td><td>owning agent only</td></tr>
+      <tr><td>B. Booking-offer buyer <span class="chip">lib/offers.ts</span></td><td>sealed only</td><td>yes, until a consented reveal</td><td>agent full; developer masked</td></tr>
+      <tr><td>C. KYC vault <span class="chip">lib/kyc-vault</span></td><td>images yes; fields <span class="t-soon">deferred</span></td><td>party-scoped decrypt at the final gate</td><td>scoped reader at pre-sign gate</td></tr>
+      <tr><td>D. Direct-sales buyer <span class="chip">lib/buyers-direct.ts</span></td><td>sealed only</td><td>yes</td><td>buyer self full; desk masked</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The seven invariants an auditor should test</h2>
+  <ol>
+    <li><strong>No PII or plaintext terms on-chain</strong> â€” only opaque hashes + neutral ids.</li>
+    <li><strong>Every counterparty-facing buyer projection is masked server-side</strong> â€” the plaintext never reaches the browser for a masked field.</li>
+    <li><strong>Every reveal is a witnessed, sealed, consented act</strong> â€” never a silent flip; the sealed declaration is on the trail even on decline.</li>
+    <li><strong>The chat is append-only + hash-chained</strong> â€” editing / reordering / deleting a past message is detectable and prevented.</li>
+    <li><strong>A seal re-verifies iff the plaintext is unaltered</strong> â€” tamper or a lost salt returns false, never a silent pass.</li>
+    <li><strong>Self-read full, counterparty-read masked</strong> â€” on every role route.</li>
+    <li><strong>No silent on-contract change</strong> â€” every change to a partnered building seals a before/after evidence record and notifies affected parties; the most sensitive particulars change only via a VRX-reviewed correction.</li>
+  </ol>
+
+  <div class="callout warn">
+    <p class="k">The one deliberate inversion (an auditor must understand this)</p>
+    <p>The system masks a buyer to a counterparty by default everywhere. Exactly one place inverts: the
+      <strong>prior-block force-show</strong>. When a desk hard-blocks a buyer, that buyer's full identity
+      is thereafter force-shown <em>to that desk only</em> â€” so a blocked bad actor cannot re-approach the
+      same desk anonymously. It is desk-scoped (never global), triggered only by a deliberate block,
+      timestamped, and applied server-side in that desk's projection alone. An intentional, scoped, logged
+      anti-cheat exception â€” not a leak.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 12 â€” Â§6 VETTING & NETWORK ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 12">
+  <p class="eyebrow">Section 6</p>
+  <h1 style="font-size:22pt">Vetting &amp; the operator network</h1>
+  <p class="lead">VRX is not only a contract â€” it is the vetting entity and the network operator. Identities
+    enter the system only through VRX; the chain then anchors the fact of a sign-off.</p>
+
+  <h2>Owner-gated onboarding</h2>
+  <p>Provisioning a node (seller) or org (agency) is <strong>owner-only</strong>: the contract owner is the
+    vetting identity. KYC / vetting is a human-led off-chain precondition done <em>before</em> the on-chain
+    <code>register_node</code> / <code>register_org</code> call â€” nothing identifying ever lands on-chain.
+    A developer's captive in-house sales team is simply an org provisioned the same way; there is no special
+    path. The same owner-gating protects the admin surface (<code>set_toll</code>,
+    <code>set_treasury</code>, the exempt list) and every migration.</p>
+
+  <h2>The eight participant roles</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Developer(s)</strong></td><td>Own the inventory; grant access, mark availability, confirm bookings; may sell direct.</td></tr>
+      <tr><td><strong>Direct-seller</strong></td><td>The developer's own desk selling to a walk-in buyer (not a separate actor).</td></tr>
+      <tr><td><strong>Agent(s)</strong></td><td>Reserve units for buyers on behalf of an agency.</td></tr>
+      <tr><td><strong>Agency/ies</strong></td><td>Manage their agents; work the developers who grant them access.</td></tr>
+      <tr><td><strong>Buyer</strong></td><td>Browses direct-sale inventory and transacts via the desk â€” a <em>state</em>, not a vetted role (any wallet).</td></tr>
+      <tr><td><strong>Direct-buyer</strong></td><td>A walk-in going straight to a desk; on the real path, meets a light anti-abuse eligibility bar <span class="t-soon">(planned)</span>.</td></tr>
+      <tr><td><strong>CEO / Approver</strong></td><td>Oversees high-stakes financial accountability (an approval trust-dial VRX sets per developer).</td></tr>
+      <tr><td><strong>Authority Review</strong></td><td>Sees the <em>vetted state</em> for oversight without ever seeing private data.</td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 190" role="img" width="680" height="190">
+        <title>VRX roles / trust network</title>
+        <desc>VRX vets and provisions developers and agencies. A developer grants access gates to
+          agencies; agencies supervise agents; agents serve buyers. Authority review sees vetted state
+          only. The whole network sits under VRX's vetting.</desc>
+        <g font-family="Inter, sans-serif" font-size="10.5" text-anchor="middle">
+          <rect x="280" y="14" width="120" height="40" rx="10" fill="#e8effd" stroke="#2f6ef0"/>
+          <text x="340" y="33" font-weight="700" fill="#141a24">VRX</text>
+          <text x="340" y="47" font-size="8.5" fill="#2f6ef0">vets Â· provisions Â· operates</text>
+
+          <rect x="70" y="86" width="120" height="40" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="130" y="110" font-weight="700" fill="#141a24">Developer</text>
+
+          <rect x="280" y="86" width="120" height="40" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="340" y="110" font-weight="700" fill="#141a24">Agency</text>
+
+          <rect x="490" y="86" width="140" height="40" rx="10" fill="#eef2f8" stroke="#d8dfeb"/>
+          <text x="560" y="105" font-weight="700" fill="#141a24">Authority review</text>
+          <text x="560" y="118" font-size="8" fill="#6b7689">vetted state only</text>
+
+          <rect x="280" y="150" width="120" height="34" rx="9" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="340" y="171" font-weight="700" fill="#141a24">Agent</text>
+
+          <rect x="430" y="150" width="120" height="34" rx="9" fill="#e2f7f0" stroke="#0fae7e"/>
+          <text x="490" y="171" font-weight="700" fill="#141a24">Buyer</text>
+        </g>
+        <g stroke="#2f6ef0" stroke-width="1.8" fill="none">
+          <path d="M300 54 L140 86"/><path d="M340 54 V86"/><path d="M380 54 L540 86"/>
+          <path d="M190 106 H280" stroke-dasharray="4 3"/><text x="235" y="100" font-family="Inter, sans-serif" font-size="8" fill="#6b7689" text-anchor="middle">grant gate</text>
+          <path d="M340 126 V150"/>
+          <path d="M360 150 L470 126" stroke="#0fae7e"/>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Figure 3 â€” Roles &amp; trust network. VRX vets the whole system; developers gate agencies; agencies supervise agents; agents serve buyers.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ SHEET 13 â€” Â§6 NON-CIRCUMVENTION + BOOKING TOKENS ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 13">
+  <p class="eyebrow">Section 6</p>
+  <h1 style="font-size:22pt">Non-circumvention &amp; booking tokens</h1>
+  <p class="lead">Two mechanisms keep the network honest: the buyer stays masked until a deal is firm (so a
+    channel cannot be cut out), and reservation capacity is a scarce, tamper-evident token that cascades
+    down the trust chain.</p>
+
+  <h2>Non-circumvention</h2>
+  <p>Trust is enforced by <strong>visibility</strong>, not disclosure. An agent holding a booking has the
+    unit off-market; the developer and agency see <em>who holds it</em> but not necessarily the private
+    buyer behind it until a consented, sealed reveal (Â§4). A non-circumvention declaration is sealed as
+    evidence at the reveal request â€” even if the reveal is later declined â€” so the introduction is on the
+    tamper-evident trail.</p>
+
+  <h2>The booking-token cascade</h2>
+  <p>VRX issues a developer a scarce quantity of <strong>booking tokens</strong> â€” reservation capacity.
+    These are handed or sold down the trust chain (developer â†’ agency â†’ agent), with a tamper-evident
+    receipt at each hand-off. An agent holding a token can secure a booking and take a deposit. Capacity is
+    scarce <em>and</em> reusable: a released or cancelled token returns up the chain. Tokens surface as
+    "coins" in the wallet.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 680 170" role="img" width="680" height="170">
+        <title>Booking-token cascade</title>
+        <desc>VRX issues scarce booking tokens to a developer; the developer hands tokens down to an
+          agency with a tamper-evident receipt; the agency hands them to an agent; the agent burns one to
+          open a hold. A released or cancelled token returns up the chain.</desc>
+        <g font-family="Inter, sans-serif" font-size="10.5" text-anchor="middle" fill="#141a24">
+          <rect x="18" y="56" width="110" height="46" rx="10" fill="#e8effd" stroke="#2f6ef0"/><text x="73" y="76" font-weight="700">VRX</text><text x="73" y="92" font-size="8.5" fill="#2f6ef0">mints scarce</text>
+          <rect x="190" y="56" width="110" height="46" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/><text x="245" y="83" font-weight="700">Developer</text>
+          <rect x="362" y="56" width="110" height="46" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/><text x="417" y="83" font-weight="700">Agency</text>
+          <rect x="534" y="56" width="128" height="46" rx="10" fill="#e2f7f0" stroke="#0fae7e"/><text x="598" y="76" font-weight="700">Agent</text><text x="598" y="92" font-size="8.5" fill="#0fae7e">burns -&gt; hold</text>
+        </g>
+        <g stroke="#2f6ef0" stroke-width="2" fill="none">
+          <path d="M128 72 H190"/><polygon points="183,67 191,72 183,77" fill="#2f6ef0" stroke="none"/>
+          <path d="M300 72 H362"/><polygon points="355,67 363,72 355,77" fill="#2f6ef0" stroke="none"/>
+          <path d="M472 72 H534"/><polygon points="527,67 535,72 527,77" fill="#2f6ef0" stroke="none"/>
+        </g>
+        <g stroke="#b7791f" stroke-width="1.6" fill="none" stroke-dasharray="5 4">
+          <path d="M598 110 V130 H245 V102"/><polygon points="240,110 245,100 250,110" fill="#b7791f" stroke="none"/>
+        </g>
+        <text x="420" y="146" font-family="Inter, sans-serif" font-size="8.5" fill="#b7791f" text-anchor="middle">released / cancelled token returns up the chain (reusable)</text>
+        <circle r="5" fill="#e4b971" stroke="#b7791f" stroke-width="1" opacity="0">
+          <animateMotion dur="2.8s" repeatCount="indefinite" path="M128 72 H190 M300 72 H362 M472 72 H534"/>
+          <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.07;0.5;0.92;1" dur="2.8s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <figcaption>Figure 4 â€” Booking-token cascade. Scarce, reusable, tamper-evident at each hand-off; a burn opens a hold on-chain.</figcaption>
+  </figure>
+
+  <div class="callout">
+    <p class="k">On-chain support</p>
+    <p>The contract backs this with a non-transferable <code>Pass</code> (<code>mint_passes</code>, owner
+      â†’ agent), <code>burn_pass_hold</code> (spend a pass to open an instant hold), and
+      <code>rebirth_pass</code> (a burned pass returns as a fresh one, its lineage recorded in the
+      <code>pass_links</code> sidecar). The exclusive-hold primitive (<code>grant_exclusive</code>) grants
+      one agency the sole right to book a unit for a bounded window, auto-reverting to the shared pool at
+      expiry (<code>release_exclusive_if_expired</code>).</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 14 â€” Â§7 ECONOMIC LAYER ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 14">
+  <p class="eyebrow">Section 7</p>
+  <h1 style="font-size:22pt">The economic layer</h1>
+  <p class="lead">Three economic objects: the $VRX credit ledger, booking tokens as reservation capacity,
+    and commission agreements with a settlement projection. All privacy-preserving; none puts money terms
+    on-chain.</p>
+
+  <h2>$VRX â€” the in-system credit</h2>
+  <dl class="facts">
+    <dt>Supply</dt><dd>Fixed 200,000,000 â€” non-inflationary, treasury-held.</dd>
+    <dt>Operations</dt><dd>Claim from treasury Â· send to another account Â· spend inside the flow.</dd>
+    <dt>Form today</dt><dd><span class="t-live">built</span> â€” an off-chain ledger (<code>lib/vrx-token.ts</code>), usable within VRX. Not fiat, not redeemable for cash.</dd>
+    <dt>Planned</dt><dd><span class="t-soon">planned</span> â€” the on-chain NEP-141 fungible-token form.</dd>
+  </dl>
+
+  <h2>Booking tokens â€” reservation capacity</h2>
+  <p>Distinct from $VRX: a booking token is a unit of <em>capacity to reserve</em>, not a credit. It is
+    scarce, cascades down the trust chain, and returns on release (Â§6). On-chain it is the non-transferable
+    <code>Pass</code> with burn + rebirth.</p>
+
+  <h2>Commissions &amp; settlement projection</h2>
+  <p>A commission <code>Agreement</code> is keyed <code>"{node}:{org}"</code> â€” the same key as the access
+    gate, so an orgâ†”node relationship has two parallel on-chain records: the gate (access scope) and the
+    agreement (commission). The on-chain record holds <strong>only an opaque HMAC anchor</strong>
+    (<code>commission_hash</code>) of the off-chain commission rulebook plus a version; the actual
+    percentages, tiers, splits and amounts never appear on-chain. Money compute and owedâ†’paid tracking stay
+    off-chain (anchor-only). On-rail settlement is <span class="t-soon">planned</span>; VRX today records
+    payments as a two-sided attestation ledger and <strong>does not move money in-app</strong>.</p>
+
+  <h3>How values are handled (stated plainly)</h3>
+  <ul class="ticks">
+    <li>Prices, plans, splits and amounts are computed and stored <strong>off-chain only</strong>; the chain carries a versioned hash anchor, never a number.</li>
+    <li>A commission rulebook is <strong>versioned</strong>: changing it writes a new version + a new anchor, so a settlement projection always references a specific sealed rulebook version rather than a mutable "current" value.</li>
+    <li>Rounding and currency handling are an off-chain concern (tested under <code>lib/price-rounding.ts</code> and the settlement-projection suite); the contract never performs money arithmetic.</li>
+    <li>The protocol usage toll (<code>toll_yocto</code>) is the only value the contract itself moves â€” a flat, owner-set amount in yoctoNEAR forwarded to the treasury, waived for exempt callers. It is unrelated to deal terms.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ SHEET 15 â€” Â§8 LEGAL POSTURE ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 15">
+  <p class="eyebrow">Section 8</p>
+  <h1 style="font-size:22pt">Legal posture</h1>
+  <p class="lead">The posture is structural and deliberately narrow: VRX facilitates and seals; it does not
+    adjudicate and does not warrant enforceability.</p>
+
+  <h2>What VRX is, legally</h2>
+  <ul class="ticks">
+    <li><strong>A facilitator and a sealer.</strong> VRX provides the private shared truth and the
+      tamper-evident record. It records that a reservation, agreement or change happened, and seals it.</li>
+    <li><strong>Not an adjudicator.</strong> VRX does not decide disputes and does not determine the
+      outcome of a disagreement between parties. It records the evidence (before/after, who was notified,
+      the sealed declarations) â€” never the dispute's resolution.</li>
+    <li><strong>Not a warrantor of enforceability.</strong> VRX does not warrant that any underlying
+      contract is legally enforceable. Parties' own terms and local law govern.</li>
+    <li><strong>Privacy-by-design.</strong> The architecture itself (opaque on-chain, masked off-chain) is
+      the primary privacy control, not a policy promise layered on afterwards.</li>
+  </ul>
+
+  <div class="callout">
+    <p class="k">Why the narrowness is a feature</p>
+    <p>By refusing to adjudicate or warrant, VRX stays a neutral infrastructure provider across
+      jurisdictions and asset classes. The sealed, append-only record it produces is designed to be
+      <em>useful evidence to the parties and their own counsel</em> â€” not a substitute for them. This is
+      what keeps the primitive domain-agnostic and multi-jurisdiction-ready (multi-jurisdiction packs are
+      <span class="t-soon">planned</span>).</p>
+  </div>
+
+  <h3>The regulator / oversight view</h3>
+  <p>The Authority-Review role is the legal posture made concrete: an oversight party can confirm the
+    <em>vetted state</em> of the system without ever seeing private buyer data. Oversight of process, not
+    exposure of parties. This is the same opacity invariant from Â§4 extended to the regulator surface â€” the
+    moat does not have a privileged bypass.</p>
+</section>
+
+<!-- ============================================================ SHEET 16 â€” Â§9 STATUS & ROADMAP ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 16">
+  <p class="eyebrow">Section 9</p>
+  <h1 style="font-size:22pt">Status &amp; roadmap</h1>
+  <p class="lead">Honest status, drawn from the capability list and the audit's deferred-controls section.
+    Built means it runs today; the rest is labelled truthfully.</p>
+
+  <h2>Built today</h2>
+  <ul class="ticks">
+    <li>On-chain reservation / hold / exclusive / attestation registry, live on NEAR testnet.</li>
+    <li>Role-scoped dashboards for all participant types; browse â†’ book â†’ reserve â†’ hold funnel.</li>
+    <li>Attested off-chain records; commission + settlement <em>projection</em>.</li>
+    <li>Booking tokens (scarce, cascading, tamper-evident) shown as "coins".</li>
+    <li>S&amp;P contract authoring (payment plans, packages, concessions, termination terms).</li>
+    <li>Vetting / listing gate; change-notice + oversight; off-chain enforcement.</li>
+    <li>$VRX off-chain credit ledger (claim / send / spend).</li>
+    <li>Provenance-stamped imagery with a two-stage reveal (stamping mechanism private).</li>
+    <li>Participation / node-license funnel + a live ecosystem map of the network.</li>
+  </ul>
+
+  <h2>In progress</h2>
+  <ul>
+    <li>Richer agency console (per-agent cards, chat, scheduling/dispatch).</li>
+    <li>Real-wallet verified sign-in (NEP-413) â€” the seam is built, default off.</li>
+  </ul>
+
+  <h2>Planned</h2>
+  <ul>
+    <li>Real on-chain settlement rail; secondary market (ownership transfer); multi-jurisdiction packs.</li>
+    <li>$VRX on-chain NEP-141 fungible-token form.</li>
+    <li>Determined-attacker-resistant image watermark + the read-side image analyzer.</li>
+  </ul>
+
+  <h2>Deferred-by-design controls (with gating reason)</h2>
+  <table>
+    <thead><tr><th>Control</th><th>State today</th><th>Gating reason</th></tr></thead>
+    <tbody>
+      <tr><td>KYC structured-fields encryption-at-rest</td><td>images encrypted; fields plaintext</td><td>batched with the pre-mainnet crypto-hardening pass; not a counterparty leak</td></tr>
+      <tr><td>Authentication (NEP-413)</td><td>seam built, flag off</td><td>demo is deliberately wallet-less; authz enforced server-side, authn is the phased piece</td></tr>
+      <tr><td>Off-chain read-scope (catalog tier)</td><td>interim caller-scoped guard</td><td>hardens with auth; competitive-confidentiality on demo data, not a moat breach</td></tr>
+      <tr><td>Global seal pepper deployment</td><td>supported, empty-safe default</td><td>one-function swap at pre-mainnet (env â†’ KMS/HSM)</td></tr>
+    </tbody>
+  </table>
+
+  <p class="fn">Path: testnet (<span class="mono">calculating-hand.testnet</span>) â†’ mainnet. No known
+    privacy/correctness leak is open; the deferred items are deliberate and sequenced behind a dependency.</p>
+</section>
+
+<!-- ============================================================ SHEET 17 â€” Â§10 APPENDIX: METHOD SURFACE ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 17">
+  <p class="eyebrow">Section 10 Â· Appendix</p>
+  <h1 style="font-size:22pt">Contract method surface</h1>
+  <p class="lead">The real callable surface, by area (names verbatim from <code>contract/src/lib.rs</code>).
+    Writers are <code>#[payable]</code> and charge storage + a flat usage toll to non-exempt callers;
+    exempt callers (owner + the exempt list) attach nothing.</p>
+
+  <div class="cols-2">
+    <div>
+      <h4>Init &amp; migration</h4>
+      <p><code>new</code> Â· <code>migrate</code> Â· <code>migrate2</code> â€¦ <code>migrate7</code> (owner-only, borsh-safe)</p>
+      <h4>Node / org / peer</h4>
+      <p><code>register_node</code> Â· <code>get_node</code> Â· <code>register_org</code> Â· <code>get_org</code> Â· <code>register_peer</code> Â· <code>deactivate_peer</code> Â· <code>get_peer</code> Â· <code>deactivate_node</code> Â· <code>deactivate_org</code></p>
+      <h4>Access gates</h4>
+      <p><code>grant_gate</code> Â· <code>revoke_gate</code> Â· <code>update_gate_scope</code> Â· <code>get_gate</code> Â· <code>can_access</code></p>
+      <h4>Commission agreements</h4>
+      <p><code>set_agreement</code> Â· <code>revoke_agreement</code> Â· <code>get_agreement</code></p>
+      <h4>Attestations</h4>
+      <p><code>attest</code> Â· <code>ratify_attestation</code> Â· <code>get_attestation</code></p>
+    </div>
+    <div>
+      <h4>Tiles (availability)</h4>
+      <p><code>stamp_tile</code> Â· <code>stamp_tiles</code> Â· <code>get_tile</code> Â· <code>finalize_tile</code></p>
+      <h4>Holds &amp; exclusives</h4>
+      <p><code>release</code> Â· <code>get_hold_expiry</code> Â· <code>set_hold_window</code> Â· <code>get_hold_window</code> Â· <code>grant_exclusive</code> Â· <code>release_exclusive</code> Â· <code>release_exclusive_if_expired</code> Â· <code>get_exclusive</code></p>
+      <h4>Claims</h4>
+      <p><code>open_claim</code> Â· <code>reply_claim</code> Â· <code>confirm_claim</code> Â· <code>cleanup_claim</code> Â· <code>get_claim</code> Â· <code>get_pending_claims</code></p>
+      <h4>Booking passes</h4>
+      <p><code>mint_passes</code> Â· <code>burn_pass_hold</code> Â· <code>rebirth_pass</code> Â· <code>active_pass_count</code> Â· <code>list_passes</code> Â· <code>get_pass</code> Â· <code>get_pass_link</code></p>
+      <h4>Protocol fee / admin</h4>
+      <p><code>add_exempt</code> Â· <code>remove_exempt</code> Â· <code>set_toll</code> Â· <code>set_treasury</code> Â· <code>get_toll</code> Â· <code>get_treasury</code> Â· <code>is_exempt</code> Â· <code>required_deposit</code> Â· <code>get_owner</code></p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p class="k">Events (NEP-297)</p>
+    <p>State changes emit structured <code>EVENT_JSON</code> logs (standard <code>vrx</code>, v1.0.0) so
+      indexers can follow without polling. Events carry only data already on-chain â€” opaque ids, keys,
+      account ids, status, version â€” never PII, amounts or terms.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SHEET 18 â€” Â§10 APPENDIX: GLOSSARY & DEMO ============================================================ -->
+<section class="sheet" data-footer="VRX White Paper Â· Technical Â· 18">
+  <p class="eyebrow">Section 10 Â· Appendix</p>
+  <h1 style="font-size:22pt">Glossary &amp; the demo</h1>
+
+  <h2>Glossary</h2>
+  <table>
+    <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>node</code></td><td>A seller / operator (e.g. a developer) on-chain.</td></tr>
+      <tr><td><code>org</code></td><td>An agency (or a developer's captive in-house sales team).</td></tr>
+      <tr><td><code>peer</code></td><td>An agent, registered under an org.</td></tr>
+      <tr><td><code>gate</code></td><td>An access grant from a node to an org over a set of opaque scope hashes.</td></tr>
+      <tr><td><code>tile</code></td><td>A unit's on-chain stamp; status 0=open 1=hold 2=closed 3=done.</td></tr>
+      <tr><td><code>claim</code></td><td>A booking request; status 0=open 1=ok 2=no 3=alt 4=confirmed.</td></tr>
+      <tr><td><code>pass</code></td><td>A non-transferable booking token (reservation capacity); burn â†’ hold, with rebirth.</td></tr>
+      <tr><td><code>exclusive</code></td><td>A bounded window granting one org the sole right to book a unit.</td></tr>
+      <tr><td><code>attestation</code></td><td>An on-chain anchor of a sealed sign-off; developer attests, VRX ratifies.</td></tr>
+      <tr><td><code>seal</code></td><td>A salted SHA-256 over an off-chain record â€” tamper-evidence without disclosure.</td></tr>
+      <tr><td><code>unit_key / request_hash</code></td><td>Opaque hashes standing in for a unit / a request on-chain.</td></tr>
+      <tr><td>$VRX</td><td>In-system credit (fixed 200M, treasury-held); off-chain ledger today, NEP-141 planned.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Run it</h2>
+  <div class="callout vetted">
+    <p class="k">The reproducible end-to-end walk</p>
+    <p>The contract ships a reproducible end-to-end walk runnable with <code>npm run demo</code> (from the
+      portal) â€” a near-workspaces sandbox that stamps a tile, opens and confirms a claim, and exercises
+      holds against a real in-process NEAR runtime. The live portal demo is at
+      <span class="mono">vrx.poolo.org</span> â€” a seeded sandbox: enter wallet-free via
+      <span class="mono">?enter=1</span>, assume any role (Developer / Agency / Agent / Buyer) from the top
+      bar, and walk one deal end to end. <strong>Write actions in the sandbox are simulated</strong>; the
+      contract on NEAR testnet is the honesty anchor, not the sandbox clicks.</p>
+  </div>
+
+  <h3>One paragraph, for a protocol reader</h3>
+  <p>VRX turns a public chain's strength â€” a tamper-evident, independently-verifiable record â€” into
+    something usable for confidential commerce by writing <em>only</em> opaque proof-of-state on-chain and
+    keeping every meaningful detail in a vetted, access-controlled off-chain layer. The contract is a thin,
+    domain-agnostic state machine over hashes; the portal is where authorization, masking and sealing live.
+    The split is the product.</p>
+
+  <div class="fn">
+    <p>Contact: <code>vrx@vettedrealty.com</code> â€” the business behind the primitive is Vetted Realty.
+      Status language is literal: <span class="t-live">built</span> runs today;
+      <span class="t-soon">planned</span> is not yet usable as described.</p>
+  </div>
+</section>
+
+</body>
+</html>

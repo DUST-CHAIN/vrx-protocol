@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="VRX">
+  <!-- PWA / favicon app icon = the simple VRX mark on a subtle dark rounded tile so the near-black hexagon
+       keeps a clean edge on any home-screen wallpaper. Declared `any maskable` in manifest.ts; the mark sits
+       inside the ~80% safe-zone so Android's mask never clips the hexagon. -->
+  <defs>
+    <linearGradient id="vrxV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+  <!-- Subtle dark backdrop (fills the maskable area; slightly lifted from pure black for edge definition). -->
+  <rect width="512" height="512" rx="112" fill="#15151c"/>
+  <!-- Mark scaled to ~0.78 and centred inside the safe-zone. Flat-top hexagon, circumradius 164. -->
+  <polygon points="420,256 338,398 174,398 92,256 174,114 338,114"
+           fill="#0a0a0a" stroke="#f4f4f5" stroke-width="13" stroke-linejoin="round"/>
+  <path d="M193 190 L256 324 L319 190"
+        fill="none" stroke="url(#vrxV)" stroke-width="42"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="193" cy="190" r="23" fill="#7c3aed"/>
+  <circle cx="319" cy="190" r="23" fill="#7c3aed"/>
+  <circle cx="174" cy="114" r="23" fill="#0a0a0a" stroke="#f4f4f5" stroke-width="6"/>
+</svg>

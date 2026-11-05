@@ -1,0 +1,224 @@
+---
+// Inline VRX assistant chat — lives on a dedicated page (not a floating widget).
+// No open/close/FAB: it's just the conversation, the suggestion strip, and the input.
+// Reuses the proven streaming + canned-FAQ logic. Backend = ./assistant/assistant.php (relative).
+import { FAQ } from "@data/assistant-faq";
+const CHIPS = FAQ.map((f) => f.q); // show all on the page (horizontal swipe strip)
+const FAQ_JSON = JSON.stringify(FAQ);
+---
+<div id="vrx-chat" data-faq={FAQ_JSON}>
+  <div id="vc-log" class="vc-log" aria-live="polite"></div>
+
+  <div class="vc-suggest" id="vc-suggest" aria-label="Suggested questions">
+    {CHIPS.map((q) => <button type="button" class="vc-chip">{q}</button>)}
+  </div>
+
+  <form id="vc-form" class="vc-form">
+    <textarea id="vc-input" rows="1" placeholder="Ask about VRX…" autocomplete="off" aria-label="Message"></textarea>
+    <button id="vc-send" type="submit" aria-label="Send">➤</button>
+  </form>
+  <p class="vc-foot">Answers about VRX only · <a href="mailto:vrx@vettedrealty.com">email a human</a></p>
+</div>
+
+<style>
+  #vrx-chat {
+    --vc-accent: var(--accent, #3d7dff);
+    --vc-green: var(--vetted, #38d39f);
+    --vc-bg: var(--bg2, #0f1420);
+    --vc-panel: var(--panel, #131a28);
+    --vc-panel2: var(--panel2, #18202f);
+    --vc-border: var(--border, #232d40);
+    --vc-text: var(--text, #e8ecf4);
+    --vc-dim: var(--dim, #9aa6be);
+    /* --vc-h is set by JS = the space from the chat's top to the visible-viewport bottom,
+       so the whole chat (incl. input) always fits above the on-screen keyboard. */
+    --vc-h: 560px;
+    display: flex; flex-direction: column;
+    height: var(--vc-h); min-height: 360px;
+    background: var(--vc-panel); border: 1px solid var(--vc-border);
+    border-radius: 16px; overflow: hidden;
+    font-family: var(--sans, system-ui, sans-serif);
+  }
+
+  .vc-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 18px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+
+  .vc-msg { max-width: 82%; padding: 11px 14px; border-radius: 14px; line-height: 1.55; font-size: 0.97rem; white-space: pre-wrap; word-wrap: break-word; }
+  .vc-msg.user { align-self: flex-end; background: var(--vc-accent); color: #fff; border-bottom-right-radius: 4px; }
+  .vc-msg.ai { align-self: flex-start; background: var(--vc-bg); color: var(--vc-text); border: 1px solid var(--vc-border); border-bottom-left-radius: 4px; }
+  .vc-msg.ai.thinking::after { content: "▋"; animation: vc-blink 1s steps(2) infinite; color: var(--vc-dim); }
+  @keyframes vc-blink { 50% { opacity: 0; } }
+  .vc-msg a { color: var(--vc-green); }
+
+  /* Suggestion chips — one horizontal swipe strip. */
+  .vc-suggest {
+    flex: 0 0 auto; display: flex; flex-wrap: nowrap; gap: 8px;
+    padding: 2px 16px 12px; overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+            mask-image: linear-gradient(to right, #000 88%, transparent);
+  }
+  .vc-suggest::-webkit-scrollbar { display: none; }
+  .vc-chip {
+    flex: 0 0 auto; white-space: nowrap;
+    background: var(--vc-bg); border: 1px solid var(--vc-border); color: var(--vc-dim);
+    border-radius: 999px; padding: 8px 14px; font-size: 0.88rem; line-height: 1.2; cursor: pointer;
+  }
+  .vc-chip:hover, .vc-chip:active { border-color: var(--vc-accent); color: var(--vc-text); }
+
+  .vc-form { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 9px; padding: 12px 14px; border-top: 1px solid var(--vc-border); background: var(--vc-panel2); }
+  #vc-input {
+    flex: 1 1 auto; resize: none; max-height: 120px; min-height: 46px;
+    background: var(--vc-bg); border: 1px solid var(--vc-border); border-radius: 12px;
+    color: var(--vc-text); font-size: 16px; padding: 12px 14px; font-family: inherit; line-height: 1.4;
+  }
+  #vc-input:focus { outline: none; border-color: var(--vc-accent); }
+  #vc-send {
+    flex: 0 0 auto; width: 46px; height: 46px; background: var(--vc-accent); color: #fff;
+    border: none; border-radius: 12px; cursor: pointer; font-size: 1.15rem;
+    display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation;
+  }
+  #vc-send:disabled { opacity: 0.5; cursor: default; }
+  .vc-foot { flex: 0 0 auto; margin: 0; padding: 10px 14px; font-size: 0.78rem; color: var(--faint, #63708c); text-align: center; background: var(--vc-panel2); }
+  .vc-foot a { color: var(--vc-dim); }
+</style>
+
+<script>
+  (() => {
+    const root = document.getElementById("vrx-chat");
+    if (!root) return;
+    const log = document.getElementById("vc-log");
+    const form = document.getElementById("vc-form");
+    const input = document.getElementById("vc-input");
+    const sendBtn = document.getElementById("vc-send");
+    const suggest = document.getElementById("vc-suggest");
+
+    const ENDPOINT = "./assistant/assistant.php"; // relative → works at any deploy path
+    const history = [];
+    let busy = false;
+
+    // ── canned FAQ (token-saver): answer common questions locally, ZERO API call ──
+    let FAQ = [];
+    try { FAQ = JSON.parse(root.dataset.faq || "[]"); } catch { FAQ = []; }
+    const STOP = new Set(["the","a","an","is","are","do","does","what","how","i","you","it","to","of","for","and","my","me","can","this","that","with","on","in","its","im","i'm","whats","what's"]);
+    function words(s) { return (s.toLowerCase().match(/[a-z']+/g) || []).filter((w) => w.length > 1 && !STOP.has(w)); }
+    function cannedAnswer(text) {
+      const w = new Set(words(text));
+      if (!w.size) return null;
+      let best = null, bestScore = 0;
+      for (const f of FAQ) {
+        let score = 0;
+        for (const k of f.keys) { const kw = words(k); if (kw.length && kw.every((x) => w.has(x))) score += kw.length; }
+        for (const qw of words(f.q)) if (w.has(qw)) score += 1;
+        if (score > bestScore) { bestScore = score; best = f; }
+      }
+      return bestScore >= 2 ? best.a : null;
+    }
+
+    // ── keyboard-safe height: fit the chat above the on-screen keyboard ──
+    const vv = window.visualViewport;
+    function syncHeight() {
+      const top = root.getBoundingClientRect().top;
+      const vh = (vv ? vv.height : window.innerHeight);
+      const avail = Math.max(360, vh - top - 16);
+      root.style.setProperty("--vc-h", avail + "px");
+    }
+    if (vv) { vv.addEventListener("resize", syncHeight); vv.addEventListener("scroll", syncHeight); }
+    window.addEventListener("resize", syncHeight);
+    window.addEventListener("scroll", syncHeight, { passive: true });
+    syncHeight();
+
+    function addMsg(role, text) {
+      const el = document.createElement("div");
+      el.className = "vc-msg " + (role === "user" ? "user" : "ai");
+      el.textContent = text;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+      return el;
+    }
+
+    // greeting
+    addMsg("ai", "Hi! I'm the VRX assistant. Ask me anything about Vetted Realty — what it is, how it keeps deals private, or what it means for your role.");
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 120) + "px";
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMessage(); }
+    });
+    suggest.addEventListener("click", (e) => {
+      const btn = e.target.closest(".vc-chip");
+      if (!btn || busy) return;
+      sendMessage(btn.textContent);
+    });
+    form.addEventListener("submit", (e) => { e.preventDefault(); sendMessage(); });
+
+    async function sendMessage(preset) {
+      if (busy) return;
+      const text = (preset !== undefined ? preset : input.value).trim();
+      if (!text) return;
+
+      suggest.hidden = true;
+      addMsg("user", text);
+      history.push({ role: "user", content: text });
+      input.value = ""; input.style.height = "auto";
+
+      busy = true; sendBtn.disabled = true;
+      const aiEl = addMsg("ai", "");
+      aiEl.classList.add("thinking");
+      let full = "";
+
+      const canned = cannedAnswer(text);
+      if (canned) {
+        aiEl.classList.remove("thinking");
+        for (let i = 0; i < canned.length; i += 2) {
+          full = canned.slice(0, i + 2); aiEl.textContent = full;
+          log.scrollTop = log.scrollHeight;
+          await new Promise((r) => setTimeout(r, 12));
+        }
+        aiEl.textContent = canned; full = canned;
+        history.push({ role: "assistant", content: full });
+        busy = false; sendBtn.disabled = false; input.focus();
+        return;
+      }
+
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
+        });
+        if (!res.ok || !res.body) throw new Error("network");
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let nl;
+          while ((nl = buf.indexOf("\n\n")) !== -1) {
+            const chunk = buf.slice(0, nl); buf = buf.slice(nl + 2);
+            const line = chunk.trim();
+            if (!line.startsWith("data:")) continue;
+            let j; try { j = JSON.parse(line.slice(5).trim()); } catch { continue; }
+            if (j.error) { full = full || j.error; aiEl.textContent = full; }
+            else if (j.delta) {
+              full += j.delta; aiEl.classList.remove("thinking");
+              aiEl.textContent = full; log.scrollTop = log.scrollHeight;
+            }
+          }
+        }
+      } catch {
+        full = full || "I couldn't reach the assistant — please email vrx@vettedrealty.com.";
+        aiEl.textContent = full;
+      }
+
+      aiEl.classList.remove("thinking");
+      if (!full) aiEl.textContent = "…";
+      history.push({ role: "assistant", content: full });
+      busy = false; sendBtn.disabled = false;
+      input.focus();
+    }
+  })();
+</script>

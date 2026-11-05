@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VRX Whitepaper — A4 Template Proof</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="vrx-paper.css" />
+</head>
+<body>
+
+<!-- screen-only print helper -->
+<div class="toolbar no-print">
+  <span>A4 · print at 100%</span>
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
+
+<!-- ========================= SHEET 1 — COVER ========================= -->
+<section class="sheet" data-footer="VRX · Confidential draft · template proof">
+  <div class="cover">
+    <div class="top">
+      <div class="brand-row">
+        <!-- VRX hexagon-V mark (placeholder; final mark drops in later) -->
+        <svg class="logo" viewBox="0 0 48 48" aria-label="VRX">
+          <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5"
+                   fill="none" stroke="#2f6ef0" stroke-width="2.5"/>
+          <path d="M16 17 L24 33 L32 17" fill="none" stroke="#0fae7e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">VRX</span>
+        <span class="classification internal" style="margin-left:auto">Internal · Full Detail</span>
+      </div>
+    </div>
+
+    <div class="mid">
+      <p class="eyebrow">White Paper</p>
+      <h1>A private, on-chain<br/>reservation primitive</h1>
+      <p class="subtitle">One trusted source of truth for <em>who reserved what</em> — without putting
+        prices, terms, or personal data on-chain.</p>
+      <div style="margin-top:16pt"><span class="seal">Vetted network</span></div>
+    </div>
+
+    <div class="bot">
+      <hr class="rule" />
+      <div class="meta">
+        <div>Version<b>Draft 0 · template</b></div>
+        <div>Status<b>Testnet · calculating-hand.testnet</b></div>
+        <div>Live<b>vrx.poolo.org</b></div>
+        <div>As of<b>November 2026</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= SHEET 2 — CONTENT ELEMENTS ========================= -->
+<section class="sheet" data-footer="VRX White Paper · 2">
+  <p class="eyebrow">Section 1</p>
+  <h1 style="font-size:22pt">What VRX is</h1>
+  <p class="lead">VRX lets an operator with unique, non-substitutable inventory feed live
+    availability to many mutually-distrusting sales teams, and let them browse, book, reserve,
+    pay a deposit and hold — privately.</p>
+
+  <h2>The one-liner</h2>
+  <p>It is a callable <strong>NEAR smart contract</strong> (the reservation and hold registry)
+    plus an off-chain <strong>portal</strong> (the apps each participant uses). Real estate is the
+    beachhead and proof; the primitive is domain-agnostic — unit <code>312</code> is not unit
+    <code>311</code>.</p>
+
+  <div class="callout vetted">
+    <p class="k">The privacy moat</p>
+    <p>No personal data, no prices, and no deal terms ever go on-chain. Every real-world identifier
+    is stored as an opaque <code>SHA-256</code> hash. The chain proves <em>that</em> a reservation
+    exists and <em>who</em> holds it; the <em>what / how-much / with-whom</em> stays off-chain.</p>
+  </div>
+
+  <h3>Capability status</h3>
+  <table>
+    <thead><tr><th>Capability</th><th>Status</th><th>Surface</th></tr></thead>
+    <tbody>
+      <tr><td>On-chain reservation &amp; hold registry</td><td class="t-live">built</td><td><span class="mono">contract/</span></td></tr>
+      <tr><td>Private browse → book → deposit funnel</td><td class="t-live">built</td><td><span class="mono">portal/</span></td></tr>
+      <tr><td>$VRX in-system credit ledger</td><td class="t-live">built</td><td><span class="mono">lib/vrx-token.ts</span></td></tr>
+      <tr><td>On-rail settlement</td><td class="t-soon">planned</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>A sealed baseline (illustrative)</h3>
+  <pre><span class="c">// a baseline seal — the ONLY content bytes on-chain, opaque + salted</span>
+<span class="k">fn</span> <span class="f">attest</span>(building_hash: <span class="f">String</span>, seal_hash: <span class="f">String</span>) {
+  <span class="c">// no price, no name, no terms — just the proof it exists</span>
+  self.attestations.<span class="f">insert</span>(&building_hash, &<span class="n">Attestation</span> { seal_hash });
+}</pre>
+
+  <dl class="facts">
+    <dt>Contract</dt><dd><span class="mono">calculating-hand.testnet</span> (testnet)</dd>
+    <dt>Supply</dt><dd>$VRX fixed at 200,000,000 — treasury-held, non-inflationary</dd>
+    <dt>Privacy</dt><dd>opaque hash / HMAC for every real-world identifier</dd>
+  </dl>
+</section>
+
+<!-- ========================= SHEET 3 — SMIL DIAGRAM ========================= -->
+<section class="sheet" data-footer="VRX White Paper · 3">
+  <p class="eyebrow">Section 2</p>
+  <h1 style="font-size:22pt">The reservation flow</h1>
+  <p>The figure below is authored so its <strong>first frame is the complete, labeled diagram</strong>
+    — exactly what prints. On screen, a reservation token travels the path and the held unit pulses;
+    in a printed PDF the motion freezes at frame one, losing nothing.</p>
+
+  <figure>
+    <div class="diagram">
+      <!-- Static-correct-at-t=0 SVG; SMIL only ADDS motion. title/desc = AI-readable. -->
+      <svg viewBox="0 0 680 220" role="img" width="680" height="220">
+        <title>VRX reservation flow</title>
+        <desc>A building's availability flows to an agency, which books on behalf of a buyer;
+          the reserved unit is held on-chain while terms stay off-chain and sealed.</desc>
+
+        <!-- nodes (fully drawn at t=0) -->
+        <g font-family="Inter, sans-serif" font-size="12" fill="#141a24" text-anchor="middle">
+          <!-- operator/building -->
+          <rect x="24" y="78" width="130" height="64" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="89" y="104" font-weight="700">Operator</text>
+          <text x="89" y="122" fill="#6b7689" font-size="10.5">live availability</text>
+
+          <!-- agency -->
+          <rect x="275" y="78" width="130" height="64" rx="10" fill="#f5f7fb" stroke="#d8dfeb"/>
+          <text x="340" y="104" font-weight="700">Agency</text>
+          <text x="340" y="122" fill="#6b7689" font-size="10.5">books privately</text>
+
+          <!-- buyer -->
+          <rect x="526" y="78" width="130" height="64" rx="10" fill="#e2f7f0" stroke="#0fae7e"/>
+          <text x="591" y="104" font-weight="700">Buyer</text>
+          <text x="591" y="122" fill="#0fae7e" font-size="10.5">holds a unit</text>
+        </g>
+
+        <!-- connector paths (drawn at t=0) -->
+        <g stroke="#2f6ef0" stroke-width="2" fill="none">
+          <path id="p1" d="M154 110 H275"/>
+          <path id="p2" d="M405 110 H526"/>
+          <polygon points="268,105 276,110 268,115" fill="#2f6ef0" stroke="none"/>
+          <polygon points="519,105 527,110 519,115" fill="#2f6ef0" stroke="none"/>
+        </g>
+
+        <!-- a travelling reservation token: SMIL enhancement. opacity 0 at t=0 so it's INVISIBLE
+             in print (the static arrows already carry the meaning); fades in only while moving. -->
+        <circle r="6" fill="#2f6ef0" opacity="0">
+          <animateMotion dur="2.6s" repeatCount="indefinite" rotate="auto"
+            path="M154 110 H275 M405 110 H526"/>
+          <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.08;0.5;0.92;1"
+            dur="2.6s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- held-unit pulse on the buyer node: SMIL enhancement.
+             t=0 is r=30 opacity=0 → INVISIBLE in print (loses nothing); animates on screen only. -->
+        <circle cx="591" cy="110" r="30" fill="none" stroke="#0fae7e" stroke-width="2" opacity="0">
+          <animate attributeName="r" values="30;46;30" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0.5;0" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- the off-chain seal note (static) -->
+        <g font-family="Inter, sans-serif" font-size="10" fill="#6b7689" text-anchor="middle">
+          <text x="340" y="176">terms, price &amp; identity stay off-chain · only an opaque seal is anchored</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Figure 1 — Reservation flow. First frame prints as the full static diagram; on screen the token animates (SMIL).</figcaption>
+  </figure>
+
+  <div class="callout">
+    <p class="k">Illustration convention</p>
+    <p>Diagrams are inline SVG. Where motion aids comprehension we add <strong>SMIL</strong>
+      (<code>&lt;animateMotion&gt;</code> / <code>&lt;animate&gt;</code>) as <em>enhancement only</em> —
+      the <code>t=0</code> frame is always the complete, readable figure, so the printed PDF never
+      loses information. Every figure carries <code>&lt;title&gt;</code> + <code>&lt;desc&gt;</code>
+      for AI and screen-reader legibility.</p>
+  </div>
+
+  <div class="fn">
+    <p>This is a template proof, not content. It exists to verify A4 pagination, print fidelity,
+      the brand system on paper, and the SMIL-with-static-first-frame illustration pattern before
+      the whitepapers are authored into it.</p>
+  </div>
+</section>
+
+</body>
+</html>

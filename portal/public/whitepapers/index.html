@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VRX Whitepapers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0a0e17;--panel:#131a28;--panel2:#18202f;--border:#232d40;--text:#e8ecf4;--dim:#9aa6be;--faint:#63708c;--accent:#3d7dff;--vetted:#38d39f;--sans:"Inter",system-ui,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1100px 560px at 50% -5%,rgba(56,211,159,.05),transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px}
+  header{padding:56px 0 8px}
+  .seal{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--vetted);background:rgba(56,211,159,.10);border:1px solid rgba(56,211,159,.35);border-radius:999px;padding:4px 11px}
+  .seal::before{content:"\2713"}
+  h1{font-size:clamp(2rem,5vw,3rem);letter-spacing:-.02em;margin:18px 0 10px}
+  .lead{font-size:1.2rem;color:var(--dim);max-width:680px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .grid{display:grid;gap:18px;margin:36px 0 10px}
+  @media(min-width:720px){.grid{grid-template-columns:1fr 1fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 22px 20px;display:flex;flex-direction:column}
+  .card h2{font-size:1.15rem;margin:0 0 6px}
+  .card .tag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);font-weight:700;margin-bottom:12px}
+  .card p{color:var(--dim);font-size:.95rem;margin:0 0 16px;flex:1}
+  .links{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:9px;font-weight:600;font-size:.9rem;border:1px solid var(--border);color:var(--text)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  footer{padding:40px 0 60px;color:var(--faint);font-size:.9rem;border-top:1px solid #1c2434;margin-top:40px}
+  .note{color:var(--faint);font-size:.9rem;max-width:680px;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="seal">Vetted</span>
+    <h1>VRX Whitepapers</h1>
+    <p class="lead">Three editions of the same honest story — a private, on-chain reservation primitive. Read on screen, or print each to a clean A4 PDF.</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <div class="tag">For judges</div>
+      <h2>Judges edition</h2>
+      <p>The 60-second case: what VRX is, the privacy moat, and why it lands in three hackathon tracks at once. Crisp, with the key diagrams.</p>
+      <div class="links">
+        <a class="btn primary" href="./vrx-whitepaper-judges.html">Read&nbsp;↗</a>
+        <a class="btn" href="./vrx-whitepaper-judges.pdf">PDF</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tag">For partners &amp; investors</div>
+      <h2>Investors edition</h2>
+      <p>The market problem, the moat, the operator-network model, and the economic layer — framed for someone evaluating backing or partnering. Honest about stage.</p>
+      <div class="links">
+        <a class="btn primary" href="./vrx-whitepaper-investors.html">Read&nbsp;↗</a>
+        <a class="btn" href="./vrx-whitepaper-investors.pdf">PDF</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tag">For engineers</div>
+      <h2>Technical / protocol</h2>
+      <p>The architecture, the NEAR contract (state V1→V7, migrations, method surface), the privacy model, and the threat-model invariants an auditor should test.</p>
+      <div class="links">
+        <a class="btn primary" href="./vrx-whitepaper-technical.html">Read&nbsp;↗</a>
+        <a class="btn" href="./vrx-whitepaper-technical.pdf">PDF</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    Some internals — notably the image provenance / forensic mechanism — are deliberately kept private
+    (the moat), under legal advice. The whitepapers describe what VRX guarantees, not every mechanism of how.
+    Live demo: <a href="https://vrx.poolo.org">vrx.poolo.org</a> · Public code:
+    <a href="https://github.com/DUST-CHAIN/vrx-protocol">github.com/DUST-CHAIN/vrx-protocol</a>.
+  </p>
+
+  <footer>
+    <a href="../">← Back to VRX</a> · Contact <a href="mailto:vrx@vettedrealty.com">vrx@vettedrealty.com</a>
+  </footer>
+</div>
+</body>
+</html>

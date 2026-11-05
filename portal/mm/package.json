@@ -1,0 +1,27 @@
+{
+  "name": "vrx-mm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MM (Marketing Materials) — the developer-side authoring app. Assembles buildings/units/texts/media → previews → exports a valid VRX ingest-pack ZIP. Separate workspace from the portal (S230). Slice 1 = the Structured face (textual foundation + units.csv import + validation rail + ZIP export).",
+  "scripts": {
+    "dev": "next dev -p 3021",
+    "build": "next build",
+    "start": "next start -p 3021",
+    "lint": "next lint",
+    "test": "npx -y tsx lib/pack.test.ts && npx -y tsx lib/units-csv.test.ts && npx -y tsx lib/export.test.ts && npx -y tsx lib/geo.test.ts && npx -y tsx lib/furniture.test.ts && npx -y tsx lib/matrix.test.ts && npx -y tsx lib/media.test.ts && npx -y tsx lib/preview.test.ts"
+  },
+  "dependencies": {
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "jszip": "^3.10.1",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/leaflet": "^1.9.22",
+    "typescript": "^5.7.3"
+  }
+}

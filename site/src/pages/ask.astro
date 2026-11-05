@@ -1,0 +1,23 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AssistantChat from "@components/AssistantChat.astro";
+---
+<Layout
+  title="Ask the VRX assistant — Vetted Realty"
+  description="Ask anything about VRX / Vetted Realty — what it is, how it keeps deals private, and what it means for your role."
+>
+  <section id="ask" style="padding-top:48px;">
+    <div class="wrap" style="max-width:760px;">
+      <p class="eyebrow">Ask VRX</p>
+      <h1 style="font-size:clamp(1.8rem,5vw,2.6rem);">Ask the assistant anything.</h1>
+      <p class="lead" style="max-width:640px;margin-bottom:26px;">
+        What VRX is, how it keeps every deal private, what it means for your role, or how to join —
+        ask in your own words. For anything it can't answer, you'll always reach a human.
+      </p>
+      <AssistantChat />
+      <p style="margin-top:20px;">
+        <a href="./#roles">← Back to the overview</a>
+      </p>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,394 @@
+/* VRX / Vetted Realty brand tokens — mirrored from portal/lib/theme.ts ("Vetted").
+   Calm deep-slate institutional frame + one disciplined blue-teal accent; the only things that
+   glow are on-chain truths. Monospace wherever data is on-chain. */
+
+:root {
+  /* Base surfaces — deep slate-navy, layered darkest→lightest. */
+  --bg: #0a0e17;
+  --bg2: #0f1420;
+  --panel: #131a28;
+  --panel2: #18202f;
+  --border: #232d40;
+  --border-soft: #1c2434;
+
+  /* Text */
+  --text: #e8ecf4;
+  --dim: #9aa6be;
+  --faint: #63708c;
+
+  /* The single "vetted" accent + the verification green. */
+  --accent: #3d7dff;
+  --accent-soft: #1a2c4d;
+  --vetted: #38d39f;
+
+  /* On-chain status palette. */
+  --open: #38d39f;
+  --hold: #e8b84b;
+  --closed: #5b9bff;
+  --danger: #ff6b6b;
+  --alt: #c78ce0;
+
+  --mono: ui-monospace, SFMono-Regular, Menlo, "Cascadia Code", monospace;
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --maxw: 1120px;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(61,125,255,0.08), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(56,211,159,0.05), transparent 55%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.015em; font-weight: 700; }
+h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); margin: 0 0 0.4em; }
+h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin: 0 0 0.5em; }
+h3 { font-size: 1.18rem; margin: 0 0 0.35em; }
+
+p { margin: 0 0 1em; color: var(--dim); }
+p.lead { font-size: 1.25rem; color: var(--text); }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code, .mono { font-family: var(--mono); }
+
+/* Section rhythm */
+section { padding: 76px 0; border-top: 1px solid var(--border-soft); }
+section:first-of-type { border-top: none; }
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
+/* The vetted seal pill */
+.seal {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--vetted);
+  background: rgba(56,211,159,0.10);
+  border: 1px solid rgba(56,211,159,0.35);
+  border-radius: 999px; padding: 4px 11px;
+}
+.seal::before { content: "✓"; }
+
+/* On-chain-style mono chip */
+.chip {
+  font-family: var(--mono); font-size: 12px; color: var(--dim);
+  background: var(--bg2); border: 1px solid var(--border-soft);
+  border-radius: 6px; padding: 2px 8px;
+}
+
+/* Cards */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+}
+.card.raised { background: var(--panel2); }
+.grid { display: grid; gap: 18px; }
+@media (min-width: 720px) { .grid.cols-2 { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 900px) { .grid.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 1rem;
+  border: 1px solid transparent; cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #2f6ef0; text-decoration: none; }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+.btn-ghost:hover { border-color: var(--accent); text-decoration: none; }
+
+/* Figure / image slots */
+figure { margin: 0; }
+figure img {
+  width: 100%; height: auto; display: block;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--panel);
+}
+figcaption { color: var(--faint); font-size: 0.85rem; margin-top: 10px; text-align: center; }
+
+/* ── Glossary term: wikipedia-style hover popup ───────────────────────── */
+.term {
+  color: var(--text);
+  border-bottom: 1px dotted var(--accent);
+  cursor: help;
+  position: relative;
+}
+.term:focus { outline: none; }
+.term .term-pop {
+  visibility: hidden; opacity: 0;
+  position: absolute; left: 0; top: 140%; z-index: 500;
+  width: min(340px, 78vw);
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.65);
+  color: var(--dim); font-size: 0.92rem; line-height: 1.55;
+  transition: opacity 0.14s ease, visibility 0.14s ease;
+  text-align: left; font-weight: 400; letter-spacing: 0;
+}
+.term .term-pop strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 0.95rem; }
+.term:hover .term-pop, .term:focus .term-pop, .term:focus-within .term-pop { visibility: visible; opacity: 1; }
+/* A hovered term must lift its whole containing card above sibling cards, else the popup renders
+   UNDER the next card (each card is its own stacking context from its hover transform). */
+.term:hover, .term:focus, .term:focus-within { z-index: 500; }
+.card:has(.term:hover), .card:has(.term:focus-within) { z-index: 500; position: relative; transform: none !important; }
+
+/* MOBILE/touch: a popup pinned to an inline word overflows the screen edge AND can be hijacked by
+   transformed ancestors (hero/figure/reveal animations). So on tap, JS HOISTS the popup to <body>
+   and gives it class .term-pop-float — a FIXED bottom card that can never be clipped or mis-anchored.
+   A full-screen .term-backdrop sits behind it (tap to dismiss). */
+.term-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.55); }
+.term-pop.term-pop-float {
+  position: fixed; left: 12px; right: 12px; top: auto; bottom: 16px; width: auto; z-index: 1001;
+  visibility: visible; opacity: 1;
+  max-height: 62vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 18px 18px 20px; font-size: 1rem; line-height: 1.6; border-radius: 14px;
+  background: var(--panel2); border: 1px solid var(--border); color: var(--dim);
+  box-shadow: 0 -10px 60px rgba(0,0,0,0.7);
+  animation: term-card-in 0.2s ease both;
+}
+.term-pop.term-pop-float strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 1.05rem; }
+@keyframes term-card-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* On touch, the in-flow hover popup must never show (we use the hoisted card instead). */
+@media (hover: none) {
+  .term .term-pop:not(.term-pop-float) { display: none; }
+}
+
+/* Lists */
+ul.ticks { list-style: none; padding: 0; margin: 0; }
+ul.ticks li { position: relative; padding-left: 26px; margin-bottom: 10px; color: var(--dim); }
+ul.ticks li::before { content: "✓"; position: absolute; left: 0; color: var(--vetted); font-weight: 700; }
+
+/* Header / nav */
+header.site {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(10,14,23,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-soft);
+}
+header.site .bar { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+header.site .nav-desktop a { color: var(--dim); margin-left: 22px; font-size: 0.95rem; font-weight: 500; }
+header.site .nav-desktop a:hover { color: var(--text); text-decoration: none; }
+.brand-mark { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); font-size: 1.05rem; }
+.brand-mark:hover { text-decoration: none; }
+.brand-mark .logo { width: 28px; height: 28px; }
+
+/* Mobile menu */
+.nav-toggle {
+  display: none; flex-direction: column; gap: 5px; justify-content: center;
+  width: 44px; height: 44px; margin-right: -8px; background: none; border: none; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.2s ease, opacity 0.2s ease; margin: 0 auto; }
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.nav-mobile {
+  display: flex; flex-direction: column;
+  border-top: 1px solid var(--border-soft); background: rgba(10,14,23,0.98);
+  padding: 6px 0;
+}
+.nav-mobile[hidden] { display: none; }
+.nav-mobile a { color: var(--text); padding: 13px 24px; font-size: 1rem; border-bottom: 1px solid var(--border-soft); }
+.nav-mobile a:last-child { border-bottom: none; }
+.nav-mobile a:hover, .nav-mobile a:active { background: var(--panel2); text-decoration: none; }
+
+@media (max-width: 760px) {
+  header.site .nav-desktop { display: none; }
+  .nav-toggle { display: flex; }
+}
+
+/* Status dots */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.live { background: var(--vetted); box-shadow: 0 0 0 0 rgba(56,211,159,0.6); animation: pulse 2.2s infinite; }
+.dot.soon { background: var(--hold); }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56,211,159,0.5); } 70% { box-shadow: 0 0 0 7px rgba(56,211,159,0); } 100% { box-shadow: 0 0 0 0 rgba(56,211,159,0); } }
+
+.status-row { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--dim); }
+
+/* Footer */
+footer.site { padding: 48px 0; border-top: 1px solid var(--border-soft); color: var(--faint); font-size: 0.9rem; }
+footer.site a { color: var(--dim); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS — tasteful, institutional. Motion is restrained (this is a "vetted",
+   trustworthy brand, not flashy-crypto). Everything degrades to no-motion under
+   prefers-reduced-motion. Scroll-reveal is driven by IntersectionObserver in the
+   Layout (adds .is-in); until JS runs OR if reduced-motion, content is fully visible.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Hero entrance — a calm settle-in on first paint. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+#hero .seal,
+#hero h1,
+#hero p.lead,
+#hero > .wrap > div,
+#hero .status-row,
+#hero figure {
+  animation: rise-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+#hero h1 { animation-delay: 0.06s; }
+#hero p.lead { animation-delay: 0.14s; }
+#hero > .wrap > div { animation-delay: 0.22s; }
+#hero .status-row { animation-delay: 0.30s; }
+#hero figure { animation-delay: 0.40s; }
+
+/* Scroll-reveal: sections' content eases up as it enters the viewport.
+   NB: once revealed we reset transform AND will-change to `none/auto` — otherwise either one keeps
+   establishing a containing block, which would break `position:fixed` descendants (the mobile
+   glossary card is fixed-to-viewport and lives inside these). */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: opacity, transform; }
+.reveal.is-in { opacity: 1; transform: none; will-change: auto; }
+/* Stagger children (cards in a grid) when the parent is marked .reveal-stagger. */
+.reveal-stagger.is-in > * { animation: rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.reveal-stagger.is-in > *:nth-child(1) { animation-delay: 0.00s; }
+.reveal-stagger.is-in > *:nth-child(2) { animation-delay: 0.07s; }
+.reveal-stagger.is-in > *:nth-child(3) { animation-delay: 0.14s; }
+.reveal-stagger.is-in > *:nth-child(4) { animation-delay: 0.21s; }
+.reveal-stagger.is-in > *:nth-child(5) { animation-delay: 0.28s; }
+.reveal-stagger.is-in > *:nth-child(6) { animation-delay: 0.35s; }
+
+/* Card + figure hover lift (desktop pointers only — no hover jank on touch). */
+@media (hover: hover) {
+  .card { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+  .card:hover { transform: translateY(-3px); border-color: var(--border); box-shadow: 0 14px 40px rgba(0,0,0,0.35); }
+  figure img { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+  figure:hover img { transform: scale(1.012); box-shadow: 0 18px 50px rgba(0,0,0,0.4); }
+}
+
+/* Button press/hover feedback. */
+.btn { transition: transform 0.14s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease; }
+.btn:active { transform: translateY(1px); }
+.btn-primary:hover { box-shadow: 0 10px 28px rgba(61,125,255,0.35); }
+
+/* Nav link underline grow. */
+header.site nav a { position: relative; transition: color 0.18s ease; }
+header.site nav a::after {
+  content: ""; position: absolute; left: 0; right: 100%; bottom: -4px; height: 2px;
+  background: var(--accent); transition: right 0.22s ease; border-radius: 2px;
+}
+header.site nav a:hover::after { right: 0; }
+header.site nav a:hover { text-decoration: none; }
+
+/* Chips in the role nav + anchor pills. */
+.btn-ghost { transition: transform 0.14s ease, border-color 0.18s ease, color 0.18s ease, background 0.18s ease; }
+
+/* Honour user motion preference — kill all of it. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  #hero .seal, #hero h1, #hero p.lead, #hero > .wrap > div, #hero .status-row, #hero figure { opacity: 1 !important; transform: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE — make phone widths flawless. The desktop grid rules already collapse to
+   one column below their breakpoints; this tightens spacing, type, nav, hero and
+   touch targets so nothing overflows or crowds on a narrow screen.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Prevent any accidental horizontal scroll from a wide child. */
+html, body { max-width: 100%; overflow-x: hidden; }
+img, figure, table { max-width: 100%; }
+
+@media (max-width: 760px) {
+  body { font-size: 16px; line-height: 1.6; }
+  .wrap { padding: 0 18px; }
+  section { padding: 52px 0; }
+  h1 { font-size: clamp(1.9rem, 8vw, 2.5rem); }
+  h2 { font-size: clamp(1.35rem, 6vw, 1.8rem); }
+  p.lead { font-size: 1.08rem; }
+
+  /* Header: brand stays; the long nav is hidden (already) — show a compact "Ask"/anchor-free bar.
+     Keep the bar from feeling empty by letting the brand breathe. */
+  header.site .bar { height: 56px; }
+
+  /* Hero: tighten the top, let the two CTAs stack full-width and be easy to tap. */
+  #hero { padding-top: 40px; }
+  #hero div[style*="display:flex"] .btn,
+  .btn { width: auto; }
+  #hero .status-row { font-size: 0.82rem; align-items: flex-start; }
+
+  /* Role-nav pills + CTA rows wrap comfortably and are tappable (>=40px). */
+  .btn { padding: 12px 18px; }
+  .btn-ghost { padding: 10px 14px; }
+
+  /* Cards: a touch less inner padding so text has room. */
+  .card { padding: 18px 18px; }
+
+  /* Role section: the left accent bar + grid read fine stacked; just ensure figures aren't cramped. */
+  figure { margin-top: 18px; }
+
+  /* Contact form: full width inputs already; make the two-column block stack with air. */
+  #contact .grid.cols-2 { gap: 22px; }
+
+  /* Glossary two-up → one-up handled by the cols-2 breakpoint (720px); nothing extra needed. */
+}
+
+/* Very small phones. */
+@media (max-width: 380px) {
+  .wrap { padding: 0 14px; }
+  h1 { font-size: 1.75rem; }
+  .chip { font-size: 11px; }
+}
+
+/* Make every interactive element a comfortable touch target on coarse pointers.
+   (NB: .term is inline text — min-height doesn't apply to it, so it's not listed here.) */
+@media (pointer: coarse) {
+  .btn, header.site nav a { min-height: 40px; }
+  .btn { display: inline-flex; align-items: center; }
+}
+
+/* ── Image lightbox ─────────────────────────────────────────────────────── */
+#lightbox {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(5, 8, 14, 0.94);
+  display: flex; align-items: center; justify-content: center;
+}
+#lightbox[hidden] { display: none; }
+#lightbox-scroll {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; overflow: hidden;
+  touch-action: none; /* JS owns pinch/pan so the page-zoom lock doesn't swallow the gesture */
+}
+#lightbox-img {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+  border-radius: 8px; box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+  transform-origin: center center; will-change: transform; cursor: zoom-in;
+  -webkit-user-select: none; user-select: none; -webkit-user-drag: none;
+}
+#lightbox-close {
+  position: fixed; top: 14px; right: 14px; z-index: 1001;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(24, 32, 47, 0.9); border: 1px solid var(--border); color: var(--text);
+  font-size: 1.3rem; line-height: 1; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+#lightbox-close:hover, #lightbox-close:active { background: var(--panel2); border-color: var(--accent); }

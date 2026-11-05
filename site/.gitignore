@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+
+# NEVER commit the live DeepSeek key — it lives only in secret.php on the server.
+public/assistant/secret.php
